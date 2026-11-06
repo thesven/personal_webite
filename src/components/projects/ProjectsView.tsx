@@ -4,29 +4,29 @@ import React from "react";
 import { PROJECTS } from "@/data/projects";
 import { useTheme } from "@/context/ThemeContext";
 
-const ASCII_SYS_TOOLKIT_SCHEMA = `
+const ASCII_SPYPOINT_MCP_SCHEMA = `
 ┌────────────────────────────────────────────────────────┐
-│                   sys-toolkit Architecture             │
+│             spypoint_mcp IoT Architecture              │
 └────────────────────────────────────────────────────────┘
-          ┌──────────────────────────────────┐
-          │  Kernel Space: eBPF Probes / DRM │
-          └─────────────────┬────────────────┘
-                            │ (BPF_MAP_TYPE_RINGBUF)
+          ┌────────────────────────────────────┐
+          │    Cellular Trail Cameras (Field)  │
+          └─────────────────┬──────────────────┘
+                            │ (Cellular Uplink)
                             ▼
-          ┌──────────────────────────────────┐
-          │ Lock-Free Single-Producer Buffer │
-          └─────────────────┬────────────────┘
-                            │ Zero-Copy IPC
+          ┌────────────────────────────────────┐
+          │      SPYPOINT Cloud Telemetry      │
+          └─────────────────┬──────────────────┘
+                            │ (Read-Only REST API)
                             ▼
-          ┌──────────────────────────────────┐
-          │  Wayland Client / wlroots Comps  │
-          └─────────────────┬────────────────┘
+          ┌────────────────────────────────────┐
+          │    spypoint_mcp (19 Tools / 112 Tests)│
+          │  - 15-Min Burst Clustering Engine  │
+          │  - In-Memory Contact Sheets (Pillow)│
+          └─────────────────┬──────────────────┘
                             ▼
-       ┌────────────────────┴────────────────────┐
-       ▼                                         ▼
- ┌───────────────┐                       ┌───────────────┐
- │ TUI Terminal  │                       │ 144Hz Overlay │
- └───────────────┘                       └───────────────┘
+          ┌────────────────────────────────────┐
+          │ Claude / Autonomous Agent Scouting │
+          └────────────────────────────────────┘
 `.trim();
 
 export function ProjectsView() {
@@ -45,29 +45,29 @@ export function ProjectsView() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-white/10 gap-2">
           <div className="flex items-center gap-2">
             <span style={{ color: themeConfig.palette.accent }} className="font-bold text-base">
-              sys-toolkit
+              spypoint_mcp
             </span>
             <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-white/70">
-              v1.4.2
+              v0.3.0
             </span>
-            <span className="text-emerald-400 text-[11px] font-bold">+420 -18</span>
+            <span className="text-emerald-400 text-[11px] font-bold">+490 -12</span>
           </div>
           <div className="flex items-center gap-2 text-white/50 text-[11px]">
-            <span>★ 1.2k stars</span>
+            <span>19 tools • 112 tests</span>
             <span>•</span>
             <a
-              href="https://github.com/thesven/personal_webite"
+              href="https://github.com/thesven/spypoint_mcp"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white hover:underline"
             >
-              github.com/thesven/sys-toolkit &rarr;
+              github.com/thesven/spypoint_mcp &rarr;
             </a>
           </div>
         </div>
 
         <p className="text-white/70 text-xs sm:text-sm leading-relaxed">
-          Low-overhead eBPF event tracer coupled with a lock-free ring buffer and zero-copy Wayland IPC connector. Provides microsecond-level system metrics to desktop overlays and CLI monitors without impacting host throughput.
+          Specialized Model Context Protocol server enabling LLM agents to monitor, query, and analyze photo capture streams from remote SpyPoint cellular trail cameras. Features 19 tools, 112 automated tests, read-only account security boundaries, and time-window burst clustering that groups multi-shot captures into discrete wildlife visits to predict dawn scouting windows.
         </p>
 
         {/* Embedded ASCII Schema Box */}
@@ -76,14 +76,14 @@ export function ProjectsView() {
             className="leading-snug select-none text-center sm:text-left"
             style={{ color: themeConfig.palette.cyan }}
           >
-            {ASCII_SYS_TOOLKIT_SCHEMA}
+            {ASCII_SPYPOINT_MCP_SCHEMA}
           </pre>
         </div>
 
         {/* Tree paths & Stack */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
           <div className="flex flex-wrap items-center gap-1.5">
-            {["Rust", "eBPF", "C", "Wayland IPC", "Linux 6.x"].map((tag) => (
+            {["Python", "MCP Protocol", "IoT Telemetry", "pytest (112 tests)", "Pillow", "Computer Vision"].map((tag) => (
               <span
                 key={tag}
                 className="px-2 py-0.5 rounded bg-white/5 text-white/70 border border-white/10 text-[11px]"
@@ -97,7 +97,7 @@ export function ProjectsView() {
 
       {/* Supporting Projects Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {PROJECTS.filter((p) => p.slug !== "sys-toolkit").map((p) => (
+        {PROJECTS.filter((p) => p.slug !== "spypoint-mcp").map((p) => (
           <div
             key={p.slug}
             className="rounded-lg border p-4 shadow-md transition-colors space-y-3 flex flex-col justify-between"
