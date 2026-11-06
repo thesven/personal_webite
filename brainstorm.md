@@ -1,7 +1,8 @@
 # Personal Website Brainstorming & Architecture
 **Project:** Michael Svendsen's Personal Website  
 **Repository:** `thesven/personal_webite`  
-**Aesthetic & UX Foundation:** Inspired by the **Omarchy OS** UI & Default Screensaver  
+**Aesthetic & UX Foundation:** Opinionated Linux / Wayland / Hyprland & Terminal Text Desktop Aesthetics  
+**Branding Directive:** Strictly independent personal branding (**SVENDSEN** / **thesven** / **michael-svendsen.dev**). No third-party OS brand names appear in the public UI or design. We purely channel the beloved visual craft: Delta Corps Priest 1 block typography, Terminal Text Effects (TTE) procedural animations, Waybar status header, and minimalist dark elegance.
 
 ---
 
@@ -10,17 +11,17 @@
 The goal is to design and develop a distinguished, high-craft personal website and professional publication platform for **Michael Svendsen**. 
 
 The site bridges two worlds:
-1. **The Omarchy Aesthetic**: Minimalist, hyper-focused, keyboard-first, terminal/TUI elegance, dark-mode mastery, crisp borders, subtle glassmorphism, and status bar ("Waybar") styling.
+1. **The Terminal & Tiling-Desktop Aesthetic**: Minimalist, hyper-focused, keyboard-first, terminal/TUI elegance, dark-mode mastery, crisp borders, subtle glassmorphism, and status bar ("Waybar") styling.
 2. **Professional Rigor**: Clean editorial typography, responsive design, fast performance (100/100 Lighthouse), and seamless reading experience for technical essays, research, and project showcases.
 
 ---
 
-## 2. The Hero Feature: Authentic Omarchy Screensaver Landing
+## 2. The Hero Feature: Authentic Terminal Screensaver Landing
 
-The highlight of the landing experience is a faithful recreation of the **Omarchy default screensaver** featuring the name **"Michael Svendsen"**.
+The highlight of the landing experience is a faithful recreation of the iconic terminal screensaver featuring the name **"Michael Svendsen"**.
 
 ### Typography & Asset Blueprint
-- **Font**: **Delta Corps Priest 1** (the exact FIGlet block font used by Omarchy's wordmark and `omarchy-ascii` tool).
+- **Font**: **Delta Corps Priest 1** (the exact FIGlet block font used for iconic terminal block wordmarks).
 - **Ascii Art Rendering**:
 ```text
    ▄▄▄▄███▄▄▄▄    ▄█   ▄████████    ▄█    █▄       ▄████████    ▄████████  ▄█
@@ -42,8 +43,8 @@ The highlight of the landing experience is a faithful recreation of the **Omarch
  ▄████████▀   ▀██████▀    ██████████  ▀█   █▀  ████████▀   ▄████████▀    ██████████  ▀█   █▀
 ```
 
-### Motion & Visual Effects (TTE / ttfx Parity)
-The real Omarchy screensaver runs Terminal Text Effects (`tte` / `ttfx`) across a rich palette of terminal animations. To achieve 100% parity on the web, our canvas renderer models the full four-phase graphics lifecycle:
+### Motion & Visual Effects (TTE / Procedural Parity)
+The screensaver runs Terminal Text Effects (`tte`) across a rich palette of procedural animations. Our canvas renderer models the full four-phase graphics lifecycle:
 
 #### 1. The 4-Phase Graphics State Machine
 ```mermaid
@@ -67,13 +68,13 @@ stateDiagram-v2
    - Dynamic multi-layer radial phosphor bloom radiating into the dark background.
    - Subtle breathing pulse (1-2% luminance oscillation mimicking cathode-ray / OLED illumination).
 3. **State: GLINT (Idle Specular Polish)**:
-   - Faithful to Omarchy's signature About/Screensaver window behavior: a delicate diagonal phosphor glint leans across the letters every 4–6 seconds, keeping the art alive without distraction.
+   - Subtle procedural shine: a delicate diagonal phosphor glint leans across the letters every 4–6 seconds, keeping the art alive without distraction.
 4. **State: OUTRO (Decay & Hand-Off)**:
    - Digital crumble, laser wipe-off, or matrix cascade down, resetting the canvas cleanly before transitioning to the next random effect.
 5. **State: WAKE (Interactive Desktop Morph)**:
    - On keypress (`Space`, `Enter`, arrows) or click/scroll, the screensaver gracefully dissolves or scales into the site's top Waybar hero, activating the desktop workspace.
 
-#### 2. The Complete Omarchy Effect Suite (8 Graphic States)
+#### 2. The Complete Terminal Effect Suite (8 Graphic States)
 1. **`decrypt` (Cryptographic Entropy Resolution)**:
    - Multi-stage deciphering sweep. Scrambled hex tokens (`0x7F`, `!@#$%`, `1010`) flicker rapidly before column-by-column settling into block glyphs with an emerald/cyan flash.
 2. **`matrix` (Digital Code Cascade)**:
@@ -101,9 +102,9 @@ stateDiagram-v2
 
 ---
 
-## 3. UI/UX Structure (Omarchy Desktop Metaphor)
+## 3. UI/UX Structure (Modern Tiling-Desktop Metaphor)
 
-Omarchy's signature look is derived from Arch Linux + Hyprland + Waybar + Quickshell:
+The site's signature look is derived from modern Arch Linux + Hyprland + Waybar + minimal terminal workflows:
 
 ### 3.1 The Top Bar ("Waybar" Header)
 - **Workspaces Indicator (Navigation)**:
@@ -112,18 +113,20 @@ Omarchy's signature look is derived from Arch Linux + Hyprland + Waybar + Quicks
   - `[3: Projects]` — Portfolio, open-source work, system architecture
   - `[4: About / CV]` — Professional journey, background, credentials
   - `[5: Contact]` — Direct email, GitHub, LinkedIn, PGP key
+- **Brand Moniker**: `SVENDSEN` with active status pulse chip.
 - **Center Pill**: Current active article title or breadcrumb path.
 - **Right Status Tray**:
-  - `[Toggles]`: Screensaver activator (`Super+Esc`), Theme picker, Sound/Ambient effects (optional retro key clicks).
+  - `[Toggles]`: Screensaver activator (`Super+Esc`), Theme picker, Sound/Ambient effects.
   - `[Clock]`: Clean system clock with local time zone.
-  - `[Command Palette Trigger]`: `⌘K` / `Ctrl+K` (mimicking Omarchy's Walker / menu launcher).
+  - `[Command Palette Trigger]`: `⌘K` / `Ctrl+K`.
 
 ### 3.2 Themes & Palette Inspiration
-Omarchy is famous for curated color palettes. We can provide a one-click theme switcher:
+Curated color palettes available via one-click theme switcher:
 - **Tokyo Night** (Classic dark blue-indigo with cyan/magenta highlights)
-- **Flexoki Dark** (Warm inky paper tone, easy on eyes, DHH favorite)
+- **Flexoki Dark** (Warm inky paper tone, easy on eyes)
 - **Oxocarbon** (High-contrast obsidian, crisp gray, stark white, neon teal)
-- **Batavia / Gruvbox / Catppuccin Mocha**
+- **Catppuccin Mocha** (Muted slate with soft lavender and sky blue)
+- **Monochrome Matrix** (True black, phosphor green, white highlights)
 
 ### 3.3 Editorial & Typography
 - **Monospace Accents**: JetBrains Mono or Berkeley Mono for headers, navigation, dates, tags, and code blocks.
