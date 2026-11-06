@@ -147,7 +147,7 @@ Explore the open-source code on GitHub: [thesven/spypoint_mcp](https://github.co
     date: "2026-11-02",
     readTime: "7 min read",
     tags: ["#ai", "#mcp", "#cloudflare", "#typescript"],
-    category: "AI & Systems",
+    category: "Edge AI & Systems",
     author: "Michael Svendsen",
     summary: "Engineering a lightweight, edge-native Model Context Protocol framework for Cloudflare Workers with real-time SSE streaming, zero cold-starts, and strict type safety.",
     content: `
@@ -218,218 +218,351 @@ Check out the project on GitHub: [thesven/LiteMCP](https://github.com/thesven/Li
     `.trim(),
   },
   {
-    slug: "zero-copy-deserialization-rust",
-    title: "Zero-Copy Deserialization: Lessons in High-Throughput Memory Geometry",
-    subtitle: "Eliminating allocation overhead in telemetry ingestion pipelines with eBPF and FlatBuffers",
-    date: "2026-10-24",
+    slug: "multi-agent-orchestration-bedrock-agentcore",
+    title: "Multi-Agent Orchestration on AWS Bedrock AgentCore: Building the Studio Scheduler",
+    subtitle: "Designing autonomous e-commerce agents that query data, generate native app layouts, and execute 1:1 UI operations without managing servers",
+    date: "2026-05-18",
     readTime: "8 min read",
-    tags: ["#systems", "#rust", "#performance"],
-    category: "Systems",
+    tags: ["#aws", "#bedrock", "#agentcore", "#copilotkit", "#multi-agent"],
+    category: "Agentic Architecture",
     author: "Michael Svendsen",
-    summary: "Architecting high-frequency telemetry ingestion engines without heap allocation by aligning memory buffers directly with kernel ring buffers.",
+    summary: "How the Data & AI team at Reactiv leveraged Amazon Bedrock AgentCore and CopilotKit to build an autonomous Studio Agent that turns merchant goals into live, optimized mobile storefronts.",
     content: `
-### 1. The Allocation Bottleneck
+### 1. Moving Beyond Bolted-On Chatbots
 
-In high-throughput telemetry pipelines processing over 2.4M events/sec per core, memory allocation (\`malloc\` / \`jemalloc\`) is the primary driver of cache invalidation and tail latency. Traditional JSON or Protobuf deserialization incurs multiple heap allocations per envelope.
+Most AI features in SaaS platforms are merely bolted on: a floating chat widget or a magic-wand button that generates static text that cannot be edited or previewed.
 
-\`\`\`rust
-// Anti-pattern: Allocating dynamic strings and vectors for every incoming wire frame
-struct WirePayload {
-    topic: String,       // Heap allocation!
-    payload: Vec<u8>,    // Second heap allocation!
-    timestamp_ns: u64,
-}
-\`\`\`
-
-> [!NOTE]
-> Tail latency (p99.99) is dictated by kernel page faults and CPU L2/L3 cache misses. Eliminating dynamic allocations restores predictable sub-microsecond response curves.
-
-### 2. Geometry Alignment with Kernel Ring Buffers
-
-By pairing **eBPF ring buffers** (\`BPF_MAP_TYPE_RINGBUF\`) with byte-aligned flat structs, we achieve zero-copy parsing. The user-space consumer maps the memory region directly into process space:
-
-\`\`\`rust
-use std::mem::size_of;
-
-#[repr(C, packed(4))]
-pub struct PacketHeader {
-    pub magic: u32,       // 0x5356454E
-    pub sequence: u64,
-    pub payload_len: u32,
-    pub flags: u16,
-    pub _reserved: u16,
-}
-
-#[inline(always)]
-pub fn parse_frame<'a>(raw: &'a [u8]) -> Result<(&'a PacketHeader, &'a [u8]), DecodeError> {
-    if raw.len() < size_of::<PacketHeader>() {
-        return Err(DecodeError::Truncated);
-    }
-    // Safe when memory is properly aligned and validated against bounds
-    let header = unsafe { &*(raw.as_ptr() as *const PacketHeader) };
-    if header.magic != 0x5356454E {
-        return Err(DecodeError::InvalidMagic);
-    }
-    let payload = &raw[size_of::<PacketHeader>()..size_of::<PacketHeader>() + header.payload_len as usize];
-    Ok((header, payload))
-}
-\`\`\`
-
-> [!TIP]
-> Always enforce memory alignment constraints (\`#[repr(C, packed(4))]\` or \`align(8)\`) to prevent bus penalties or unaligned memory access exceptions on ARM64 targets.
-
-### 3. Benchmarks & Real-World Telemetry
-
-We measured single-thread throughput across three serialization formats on an AMD EPYC 9654 running Linux 6.12:
-
-| Format | Throughput (msgs/sec) | Mean Latency | p99.9 Latency | Allocations / Op |
-| :--- | :--- | :--- | :--- | :--- |
-| **Zero-Copy FlatBuffer** | **4,820,000** | **0.18 µs** | **0.42 µs** | **0** |
-| Protobuf v3 (C++) | 1,240,000 | 0.81 µs | 3.20 µs | 2 |
-| Serde JSON (Rust) | 380,000 | 2.63 µs | 14.80 µs | 7 |
-
-By treating memory geometry as an explicit architectural tier, we reduced our telemetry ingestion cluster footprint by 75% while achieving absolute deterministic jitter.
-    `.trim(),
-  },
-  {
-    slug: "wayland-compositor-architecture",
-    title: "Compositor Mechanics: Building Smooth 144Hz Desktop UX with Wayland & Hyprland",
-    subtitle: "Direct scanout, damage tracking, and tearing control protocols in modern Linux window management",
-    date: "2026-09-18",
-    readTime: "11 min read",
-    tags: ["#architecture", "#wayland", "#graphics"],
-    category: "Architecture",
-    author: "Michael Svendsen",
-    summary: "Deep dive into Wayland IPC protocols, DRM/KMS buffer flipping, and how sub-millisecond damage tracking creates fluid tiling window manager experiences.",
-    content: `
-### 1. The Death of X11 and the Wayland Paradigm Shift
-
-X11 was architected around a client-server network model where every window was a subwindow on the root screen. Wayland inverts this model: **every frame is perfect**. The compositor *is* the display server.
+When we designed the AI Studio Agent at Reactiv, we established a non-negotiable architectural rule: **anything a user can do, the agent can do, using the exact same tools.**
 
 \`\`\`text
-Client  ──(wl_surface.attach)──>  Wayland IPC  ──>  Compositor (Hyprland / wlroots)
-                                                             │
-                                                        DRM/KMS Plane
-                                                             │
-                                                        Hardware Display
+Merchant Prompt: "Optimize my home screen for conversion every Monday at 9am"
+                                      │
+                   Amazon Bedrock AgentCore Multi-Agent
+                                      │
+            ┌─────────────────────────┼─────────────────────────┐
+            ▼                         ▼                         ▼
+   Analytics Inspector        Shopify Catalog        Studio Layout Builder
+(Snowflake/dbt metrics)      (Products & Tags)        (Zustand UI Tools)
 \`\`\`
 
-> [!IMPORTANT]
-> In Wayland, clients render into their own shared memory or DMA-BUF buffers. The compositor never receives invalid or half-drawn state.
+### 2. Harnessing Amazon Bedrock AgentCore
 
-### 2. Damage Tracking & Atomic Pageflips
+Before AgentCore, building an agent harness meant provisioning compute clusters, managing tool registries, state serialization, memory persistence, and IAM authentication from scratch.
 
-To achieve seamless 144Hz+ rendering without consuming excessive GPU TDP:
-1. **Damage Region Accumulation**: The client reports only the bounding box of pixels that changed (\`wl_surface.damage_buffer\`).
-2. **Direct Scanout**: When a client window is fullscreen or occupies an entire hardware plane, the compositor bypasses composition shaders and hands the DMA-BUF directly to the display hardware plane via atomic KMS.
+With AgentCore:
+1. **Managed Agent Harness**: We declare the model, system instructions, and tool definitions in CDK infrastructure-as-code.
+2. **Contextual Skill Routing**: The agent breaks complex merchant directives into multi-step execution plans—querying top-converting products first, inspecting catalog availability, generating promotional copy, and configuring carousel components.
+3. **Multi-Agent Coordination**: Specialist sub-agents handle discrete tasks (e.g., metric validation vs. visual layout creation) through orchestrated state boundaries.
 
-\`\`\`c
-// Direct scanout check in modern Wayland compositor
-bool can_direct_scanout(struct wlr_output *output, struct wlr_surface *surface) {
-    if (!surface || !wlr_surface_is_xdg_surface(surface)) return false;
-    struct wlr_box surface_box = { .x = 0, .y = 0, .width = output->width, .height = output->height };
-    return wlr_box_equal(&surface->current.geometry, &surface_box) && !output->has_overlay_effects;
-}
-\`\`\`
+### 3. 1:1 Tool Mapping with CopilotKit & Zustand
 
-### 3. Conclusion
+By refactoring the frontend studio state into modular Zustand stores, every human action (such as dragging a product carousel into view) maps directly to a CopilotKit action callable by the agent:
 
-Modern Linux desktops have evolved into precision graphics machines. Pairing atomic modesetting with minimal Wayland client IPC unlocks fluid, tearing-free desktop interactions that rival custom embedded hardware.
-    `.trim(),
-  },
-  {
-    slug: "kernel-ebpf-telemetry-fabric",
-    title: "eBPF Observability: Safe In-Kernel Probing for Cloud Infrastructure",
-    subtitle: "Tracing network packet paths and TCP lifecycle anomalies without kernel modules or context switch traps",
-    date: "2026-08-05",
-    readTime: "9 min read",
-    tags: ["#systems", "#ebpf", "#infrastructure"],
-    category: "Infrastructure",
-    author: "Michael Svendsen",
-    summary: "How we deploy verified eBPF bytecode to trace network packet lifecycles, detect TCP retransmissions, and extract zero-overhead latency metrics in distributed clusters.",
-    content: `
-### 1. Why eBPF Changes Systems Engineering
-
-Traditional observability tools rely on either user-space polling (\`/proc\`, \`/sys\`) or invasive kernel modules that risk kernel panics. **eBPF (Extended Berkeley Packet Filter)** provides an in-kernel virtual machine with a static verifier, ensuring attached programs:
-- Cannot deadlock the kernel.
-- Cannot dereference out-of-bounds pointers.
-- Terminate within bounded execution steps.
-
-### 2. Tracing TCP Retransmits in 20 Lines of C
-
-\`\`\`c
-#include <linux/kconfig.h>
-#include <linux/bpf.h>
-#include <linux/tcp.h>
-#include <bpf/bpf_helpers.h>
-
-struct event_t {
-    __u32 saddr;
-    __u32 daddr;
-    __u16 sport;
-    __u16 dport;
-    __u64 state;
+\`\`\`typescript
+export const useStudioAgentTools = () => {
+  useCopilotAction({
+    name: "insertProductCarousel",
+    description: "Inserts a curated product carousel with ranked inventory",
+    parameters: [
+      { name: "title", type: "string", description: "Heading for the carousel" },
+      { name: "productIds", type: "string[]", description: "Ranked Shopify product IDs" },
+    ],
+    handler: async ({ title, productIds }) => {
+      studioStore.getState().insertSection({
+        type: "carousel",
+        title,
+        productIds,
+      });
+    },
+  });
 };
-
-struct {
-    __uint(type, BPF_MAP_TYPE_RINGBUF);
-    __uint(max_entries, 256 * 1024);
-} events SEC(".maps");
-
-SEC("tracepoint/tcp/tcp_retransmit_skb")
-int trace_tcp_retransmit(struct trace_event_raw_tcp_event_skb *ctx) {
-    struct event_t *event = bpf_ringbuf_reserve(&events, sizeof(*event), 0);
-    if (!event) return 0;
-
-    event->saddr = ctx->saddr;
-    event->daddr = ctx->daddr;
-    event->sport = ctx->sport;
-    event->dport = ctx->dport;
-    bpf_ringbuf_submit(event, 0);
-    return 0;
-}
-
-char LICENSE[] SEC("license") = "GPL";
 \`\`\`
 
-> [!NOTE]
-> Ring buffers guarantee lock-free, single-producer multi-consumer event delivery directly into user-space listeners with sub-microsecond latency.
+### 4. Real-World Commercial Impact
+
+The result is instant mobile app optimization: merchants simply state what they want, and the agent synthesizes live Shopify order signals, evaluates conversion trends from Snowflake, and generates fully functional App Clips that increase repeat purchase rates across global retailers.
     `.trim(),
   },
   {
-    slug: "lock-free-ring-buffers-concurrency",
-    title: "Lock-Free Ring Buffers: Designing Deterministic Single-Producer Multi-Consumer Queues",
-    subtitle: "Cache-line padding, memory barriers, and sequential consistency in low-latency systems",
-    date: "2026-06-12",
+    slug: "automating-gguf-quantization-huggingface",
+    title: "Automating GGUF Quantization: Bridging Hugging Face Transformers to Local Runtimes",
+    subtitle: "Automating tokenizer migrations, consolidated safetensors, and multi-quant matrix exports for llama.cpp and Ollama",
+    date: "2026-04-12",
     readTime: "7 min read",
-    tags: ["#architecture", "#concurrency", "#performance"],
-    category: "Architecture",
+    tags: ["#llm", "#gguf", "#quantization", "#huggingface", "#python"],
+    category: "Machine Learning",
     author: "Michael Svendsen",
-    summary: "Practical guide to cache-line padding, false sharing prevention, and atomic memory ordering when building high-speed concurrency primitives.",
+    summary: "Why manually converting models to GGUF format is error-prone, and how GGUF-n-Go automates tokenizer synchronization, safetensor shard consolidation, and multi-precision quant matrix exports.",
     content: `
-### 1. The Cost of Locks in Microsecond Workloads
+### 1. The Friction in Modern Model Quantization
 
-Mutexes and rwlocks rely on OS futexes when contested. A single thread context switch costs ~1.5 to 3 microseconds — catastrophic when your processing budget is 5 microseconds per message.
+The open-source AI ecosystem has rapidly embraced local inference engines like \`llama.cpp\`, Ollama, and LM Studio. However, converting bleeding-edge weights from Hugging Face into deployment-ready GGUF format remains full of friction:
+- Discrepancies between SentencePiece and Hugging Face BPE / Tokenizers v3.
+- Sharded \`model-00001-of-00004.safetensors\` files with disparate tensor naming schemes.
+- Tedious manual execution of multiple quantization commands (\`Q4_K_M\`, \`Q5_K_M\`, \`Q8_0\`, \`FP16\`).
 
-### 2. Cache-Line Alignment & False Sharing
+To solve this across our fine-tuning workflows, I developed **GGUF-n-Go**.
 
-Modern x86_64 CPUs utilize 64-byte cache lines. If the writer's head pointer and reader's tail pointer reside in the same 64-byte cache line, both cores continuously invalidate each other's L1 cache via the MESI cache coherency protocol.
+\`\`\`text
+Hugging Face Repo ──> Automatic Dependency Resolution
+                            │
+               Convert to FP16 / BF16 GGUF
+                            │
+          Multi-Quantization Matrix Generator
+        ┌─────────────┬─────────────┬─────────────┐
+        ▼             ▼             ▼             ▼
+      Q4_K_M        Q5_K_M        Q8_0          FP16
+\`\`\`
 
-\`\`\`rust
-// Rust implementation preventing false sharing via explicit alignment
-use std::sync::atomic::{AtomicUsize, Ordering};
+### 2. Handling Tokenizer Schema Migrations
 
-#[repr(align(64))]
-pub struct CachePadded<T>(pub T);
+Different architectures (Llama-3, Qwen2, Gemma, Mistral) encode token vocabularies, added tokens, and chat templates differently. GGUF-n-Go inspects \`tokenizer_config.json\` and \`tokenizer.json\` to normalize special token IDs:
 
-pub struct SpscRingBuffer<T, const CAP: usize> {
-    head: CachePadded<AtomicUsize>, // Written by producer, read by consumer
-    tail: CachePadded<AtomicUsize>, // Written by consumer, read by producer
-    buffer: [*mut T; CAP],
+\`\`\`python
+def extract_chat_template_and_tokens(model_dir: Path) -> dict:
+    """Extract and validate chat templates and special tokens for GGUF metadata."""
+    config_path = model_dir / "tokenizer_config.json"
+    if not config_path.exists():
+        raise FileNotFoundError(f"Missing tokenizer config at {config_path}")
+        
+    with open(config_path, "r", encoding="utf-8") as f:
+        config = json.load(f)
+        
+    return {
+        "bos_token_id": config.get("bos_token_id"),
+        "eos_token_id": config.get("eos_token_id"),
+        "chat_template": config.get("chat_template"),
+    }
+\`\`\`
+
+### 3. Pipeline Automation with Clean CLI Ergonomics
+
+With GGUF-n-Go, a single command clones the source weights, resolves dependencies, constructs the base GGUF, compiles the requested quantizations, and writes out a clean summary table:
+
+\`\`\`bash
+python cli.py --model thesven/Aether-Qwen2-0.5B-SFT --quants Q4_K_M,Q8_0,FP16 --output ./dist
+\`\`\`
+
+This automated pipeline has allowed our fine-tuning labs to publish quantized weights on Hugging Face within minutes of training completion.
+
+Explore the repository: [thesven/GGUF-n-Go](https://github.com/thesven/GGUF-n-Go).
+    `.trim(),
+  },
+  {
+    slug: "architecting-iracing-telemetry-sdk-typescript",
+    title: "Designing a High-Frequency Telemetry SDK in TypeScript: Type-Safe Contracts for iRacing",
+    subtitle: "Token bucket rate limiters, session caching, and zero-allocation streaming for motorsport telemetry ingestion",
+    date: "2026-03-02",
+    readTime: "7 min read",
+    tags: ["#typescript", "#sdk", "#telemetry", "#performance", "#nodejs"],
+    category: "Developer Tooling",
+    author: "Michael Svendsen",
+    summary: "Architecting iracing-data-sdk: building end-to-end type safety, automated rate-limiting, and chunked download managers for real-time motorsport telemetry.",
+    content: `
+### 1. The Challenge of Simulation Telemetry
+
+The iRacing Data API provides extensive endpoints covering live sessions, lap telemetry, driver ratings, and track geometries. However, building consumer applications against raw HTTP endpoints presents unique hurdles:
+- Aggressive API rate limits and token bucket constraints.
+- Ephemeral S3 pre-signed URLs requiring multi-step download reconciliation.
+- Unpredictable payload schemas between official series, team races, and hosted sessions.
+
+To address this, I built **\`iracing-data-sdk\`**, a strongly typed TypeScript client designed for production telemetry ingestion.
+
+\`\`\`text
+iRacing REST API ──> Session Auth & Token Bucket Rate Limiter
+                           │
+                 Pre-Signed S3 Resolution
+                           │
+             Strongly Typed Zod / TS Schemas
+                           │
+            Application Consumer (Analytics / UI)
+\`\`\`
+
+### 2. Leaky Bucket Rate Limiting & Auth Lifecycle
+
+To ensure client applications never hit HTTP 429 penalties during heavy telemetry polling, the SDK implements an internal token bucket rate limiter paired with automatic session cookie renewal:
+
+\`\`\`typescript
+export class RateLimitedClient {
+  private queue: Array<() => void> = [];
+  private tokens: number;
+  private lastRefill: number = Date.now();
+
+  constructor(private capacity: number = 20, private refillRatePerSec: number = 5) {
+    this.tokens = capacity;
+  }
+
+  async acquire(): Promise<void> {
+    this.refill();
+    if (this.tokens > 0) {
+      this.tokens--;
+      return;
+    }
+    await new Promise<void>((resolve) => this.queue.push(resolve));
+    this.tokens--;
+  }
+
+  private refill(): void {
+    const now = Date.now();
+    const elapsed = (now - this.lastRefill) / 1000;
+    this.tokens = Math.min(this.capacity, this.tokens + elapsed * this.refillRatePerSec);
+    this.lastRefill = now;
+    while (this.tokens > 0 && this.queue.length > 0) {
+      const next = this.queue.shift();
+      if (next) next();
+    }
+  }
 }
 \`\`\`
 
-By padding pointers to 64-byte boundaries, memory bus contention drops to zero, sustaining 10M+ message transfers per second.
+### 3. Full End-to-End Type Safety
+
+Every response payload—from sector times and tire telemetry to license class progressions—is backed by strict TypeScript interfaces, giving developers full autocomplete and compile-time correctness.
+
+Explore the open-source library: [thesven/iracing_sdk_ts](https://github.com/thesven/iracing_sdk_ts).
+    `.trim(),
+  },
+  {
+    slug: "parsing-binary-gif-streams-cielab-typescript",
+    title: "Binary Stream Parsing & Perceptual Color Extraction: Building @mikesven/gif-parser",
+    subtitle: "Decoding logical screen descriptors, global color tables, and delta-E perceptual color math in zero-dependency TypeScript",
+    date: "2026-01-20",
+    readTime: "6 min read",
+    tags: ["#typescript", "#binary", "#graphics", "#color-science", "#npm"],
+    category: "Systems & Binary",
+    author: "Michael Svendsen",
+    summary: "How I built @mikesven/gif-parser: a zero-dependency TypeScript library for byte-level parsing of GIF streams and extracting perceptual CIELAB color palettes.",
+    content: `
+### 1. Why Parse Binary Formats in TypeScript?
+
+Most JavaScript image processing libraries rely on heavyweight native bindings (such as \`sharp\` or \`node-canvas\`), which are incompatible with serverless runtimes like Cloudflare Workers or Deno.
+
+When building lightweight media analysis tools, parsing the byte stream directly in pure TypeScript with \`ArrayBuffer\` and \`DataView\` provides zero-dependency portability and instant startup.
+
+I engineered **\`@mikesven/gif-parser\`** to unpack GIF87a and GIF89a specifications and derive exact color metrics directly from the raw binary stream.
+
+\`\`\`text
+Raw GIF ArrayBuffer ──> Header & Logical Screen Descriptor (13 bytes)
+                               │
+                    Global Color Table (GCT)
+                               │
+               RGB (sRGB) ──> CIE XYZ ──> CIELAB
+                               │
+                 Perceptual Delta-E Palette
+\`\`\`
+
+### 2. Binary Unpacking with DataView
+
+The first 13 bytes of a GIF contain the signature and the Logical Screen Descriptor:
+
+\`\`\`typescript
+export function parseLogicalScreenDescriptor(view: DataView): ScreenDescriptor {
+  const width = view.getUint16(6, true);  // Little-endian
+  const height = view.getUint16(8, true);
+  const packed = view.getUint8(10);
+
+  const hasGlobalColorTable = (packed & 0b10000000) !== 0;
+  const colorResolution = ((packed & 0b01110000) >> 4) + 1;
+  const sortFlag = (packed & 0b00001000) !== 0;
+  const gctSize = 2 << (packed & 0b00000111);
+
+  return { width, height, hasGlobalColorTable, colorResolution, sortFlag, gctSize };
+}
+\`\`\`
+
+### 3. From RGB to CIELAB Perceptual Color Space
+
+Standard Euclidean distance in RGB color space does not match human perceptual color differences. Two colors that look vastly different can have a small RGB distance, and vice versa.
+
+The parser transforms sRGB values through the linear D65 CIE XYZ space into $L^*a^*b^*$, enabling accurate $\\Delta E$ color difference computations:
+
+\`\`\`typescript
+export function rgbToCielab(r: number, g: number, b: number): [number, number, number] {
+  // Convert sRGB to linear RGB and project to XYZ
+  let [rLin, gLin, bLin] = [r, g, b].map((c) => {
+    c /= 255;
+    return c > 0.04045 ? Math.pow((c + 0.055) / 1.055, 2.4) : c / 12.92;
+  });
+
+  const x = (rLin * 0.4124 + gLin * 0.3576 + bLin * 0.1805) / 0.95047;
+  const y = (rLin * 0.2126 + gLin * 0.7152 + bLin * 0.0722) / 1.00000;
+  const z = (rLin * 0.0193 + gLin * 0.1192 + bLin * 0.9505) / 1.08883;
+
+  const f = (t: number) => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
+
+  const lStar = 116 * f(y) - 16;
+  const aStar = 500 * (f(x) - f(y));
+  const bStar = 200 * (f(y) - f(z));
+
+  return [lStar, aStar, bStar];
+}
+\`\`\`
+
+The package is published on npm as [\`@mikesven/gif-parser\`](https://www.npmjs.com/package/@mikesven/gif-parser) with open source on GitHub: [thesven/ts-gif-parser](https://github.com/thesven/ts-gif-parser).
+    `.trim(),
+  },
+  {
+    slug: "serverless-photography-sst-ion-cloudflare",
+    title: "Deploying a High-Resolution Photography Platform with SST Ion & Cloudflare Pages",
+    subtitle: "Zero-database architecture, edge caching, and fluid responsive galleries for Ontario wildlife and astrophotography",
+    date: "2025-11-14",
+    readTime: "5 min read",
+    tags: ["#cloudflare", "#sst", "#nextjs", "#photography", "#web-perf"],
+    category: "Edge Architecture",
+    author: "Michael Svendsen",
+    summary: "How I architected photography.mikesvendsen.net: using SST Ion, Cloudflare Pages, and edge image optimization to showcase high-resolution fine-art photography with sub-second page loads.",
+    content: `
+### 1. Visual Storytelling on the Modern Edge
+
+Fine-art wildlife and astrophotography demand uncompromising image fidelity. Displaying multi-megabyte raw captures on the web without degrading viewer experience requires careful balance between perceptual resolution and delivery latency.
+
+When redesigning **photography.mikesvendsen.net**, I replaced traditional CMS backends and heavy databases with a completely static, edge-optimized architecture powered by **SST Ion** on **Cloudflare Pages**.
+
+\`\`\`text
+Lightroom High-Res Export ──> Content Manifest & WebP Generation
+                                        │
+                               SST Ion Infrastructure
+                                        │
+                     Cloudflare Global Edge Network
+                     (sub-20ms edge cache response)
+                                        │
+                         Responsive Fluid Gallery UI
+\`\`\`
+
+### 2. Infrastructure as Code with SST Ion
+
+Using SST Ion, deployment and domain routing are declared in code:
+
+\`\`\`typescript
+// sst.config.ts
+export default $config({
+  app(input) {
+    return {
+      name: "personal-photography",
+      removal: input?.stage === "production" ? "retain" : "remove",
+      home: "cloudflare",
+    };
+  },
+  async run() {
+    new sst.cloudflare.StaticSite("PhotographySite", {
+      domain: "photography.mikesvendsen.net",
+      build: {
+        command: "npm run build",
+        output: "out",
+      },
+    });
+  },
+});
+\`\`\`
+
+### 3. Edge Performance & Perceptual Loading
+
+The site employs:
+- **Responsive WebP/AVIF srcsets:** Serving precise device resolutions without wasted bandwidth.
+- **Edge Cache Headers (\`public, max-age=31536000, immutable\`):** Ensuring repeat visitors get instant cache hits globally.
+- **Keyboard & Touch Navigation:** Seamless full-bleed lightbox navigation for immersion.
+
+Visit the live gallery: [photography.mikesvendsen.net](https://photography.mikesvendsen.net).
     `.trim(),
   },
 ];
