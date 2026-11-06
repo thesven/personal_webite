@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTheme, THEMES, ThemeId } from "@/context/ThemeContext";
 import { playSwitchClick } from "@/lib/audio";
 
@@ -15,6 +15,7 @@ const WORKSPACES = [
 
 export function Waybar() {
   const pathname = usePathname();
+  const router = useRouter();
   const {
     theme,
     setTheme,
@@ -23,6 +24,7 @@ export function Waybar() {
     toggleSound,
     crtEnabled,
     toggleCrt,
+    screensaverActive,
     setScreensaverActive,
     setCommandPaletteOpen,
   } = useTheme();
@@ -41,9 +43,9 @@ export function Waybar() {
 
   return (
     <header
-      className="sticky top-0 z-40 w-full border-b backdrop-blur-md px-3 sm:px-4 py-2 transition-colors duration-300"
+      className="sticky top-0 z-50 w-full border-b backdrop-blur-md px-3 sm:px-4 py-2 transition-colors duration-300"
       style={{
-        backgroundColor: "rgba(10, 11, 16, 0.85)",
+        backgroundColor: "rgba(10, 11, 16, 0.9)",
         borderColor: themeConfig.palette.border,
       }}
     >
@@ -54,12 +56,15 @@ export function Waybar() {
           <button
             onClick={() => {
               setScreensaverActive(true);
+              if (pathname !== "/") {
+                router.push("/");
+              }
               playSwitchClick("space", soundEnabled);
             }}
             title="Open Screensaver Hero (Space / Super+Esc)"
             className="flex items-center gap-1.5 px-2.5 py-1 rounded transition border cursor-pointer group"
             style={{
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
+              backgroundColor: "rgba(0, 0, 0, 0.6)",
               borderColor: themeConfig.palette.border,
             }}
           >
@@ -83,7 +88,10 @@ export function Waybar() {
                 <Link
                   key={ws.href}
                   href={ws.href}
-                  onClick={() => playSwitchClick("down", soundEnabled)}
+                  onClick={() => {
+                    setScreensaverActive(false);
+                    playSwitchClick("down", soundEnabled);
+                  }}
                   title={ws.title}
                   className={`px-2.5 py-1 rounded font-medium transition ${
                     isActive
@@ -124,6 +132,21 @@ export function Waybar() {
             </kbd>
           </button>
           <span className="text-white/20">•</span>
+          <span
+            className="font-medium font-mono text-[11px]"
+            style={{
+              color: screensaverActive
+                ? themeConfig.palette.cyan
+                : themeConfig.palette.accent,
+            }}
+          >
+            {screensaverActive
+              ? "screensaver [intro]"
+              : pathname === "/"
+              ? "sys [active]"
+              : `${pathname?.replace("/", "")} [active]`}
+          </span>
+          <span className="text-white/20">•</span>
           <span className="text-white/40">hyprland/wayland</span>
         </div>
 
@@ -147,7 +170,7 @@ export function Waybar() {
           {/* CRT Filter Toggle */}
           <button
             onClick={toggleCrt}
-            className={`px-2 py-0.5 rounded border transition font-mono ${
+            className={`px-2 py-0.5 rounded border transition font-mono cursor-pointer ${
               crtEnabled
                 ? "bg-white/10 border-white/30 text-cyan-300"
                 : "bg-black/50 border-white/10 text-white/40"
@@ -160,7 +183,7 @@ export function Waybar() {
           {/* Audio Haptics Toggle */}
           <button
             onClick={toggleSound}
-            className={`px-2 py-0.5 rounded border transition ${
+            className={`px-2 py-0.5 rounded border transition cursor-pointer ${
               soundEnabled
                 ? "bg-white/10 border-white/30 text-white"
                 : "bg-black/50 border-white/10 text-white/40"
@@ -168,6 +191,24 @@ export function Waybar() {
             title="Toggle Mechanical Key Sounds"
           >
             {soundEnabled ? "🔊" : "🔇"}
+          </button>
+
+          {/* Mode Toggle Button (Screensaver <-> Desktop) */}
+          <button
+            onClick={() => {
+              if (!screensaverActive && pathname !== "/") {
+                router.push("/");
+              }
+              setScreensaverActive(!screensaverActive);
+              playSwitchClick("space", soundEnabled);
+            }}
+            className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-white/10 hover:bg-white/15 border border-white/20 text-white transition cursor-pointer font-mono text-[11px]"
+            title="Toggle Mode (Space / Super+Esc)"
+          >
+            <span className="hidden sm:inline text-[10px] bg-white/10 px-1 py-0.2 rounded border border-white/20 text-cyan-300">
+              Space
+            </span>
+            <span>{screensaverActive ? "Desktop" : "Screensaver"}</span>
           </button>
 
           {/* Live System Clock */}

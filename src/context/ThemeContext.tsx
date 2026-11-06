@@ -137,7 +137,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<ThemeId>("tokyonight");
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [crtEnabled, setCrtEnabled] = useState(true);
-  const [screensaverActive, setScreensaverActive] = useState(false);
+  const [screensaverActive, setScreensaverActive] = useState(true);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [, startTransition] = useTransition();
 
@@ -209,18 +209,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
           return;
         }
       }
-      // Space -> Toggle Screensaver when not typing in an input
-      if (e.code === "Space" && !commandPaletteOpen) {
+      // Space or Enter -> Toggle Screensaver when not typing in an input
+      if ((e.code === "Space" || (screensaverActive && e.key === "Enter")) && !commandPaletteOpen) {
         const target = e.target as HTMLElement;
         if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
           return;
         }
-        // If screensaver is open, space or any key wakes
-        if (screensaverActive) {
-          e.preventDefault();
-          setScreensaverActive(false);
-          playSwitchClick("space", soundEnabled);
-        }
+        e.preventDefault();
+        setScreensaverActive((prev) => !prev);
+        playSwitchClick("space", soundEnabled);
       }
     };
 

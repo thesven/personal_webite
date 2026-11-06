@@ -420,15 +420,95 @@ export function ScreensaverCanvas({
     };
   }, [themeConfig, nextEffect]);
 
+  useEffect(() => {
+    if (fullscreen) {
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = prevOverflow;
+      };
+    }
+  }, [fullscreen]);
+
   return (
     <div
       className={`relative select-none overflow-hidden ${
         fullscreen
-          ? "fixed inset-0 z-50 bg-[#07080c] flex flex-col"
+          ? "fixed inset-0 z-40 bg-[#07080c] flex flex-col items-center justify-center cursor-pointer"
           : "w-full h-80 sm:h-96 md:h-[420px] rounded-lg border border-white/10 bg-black/40"
       }`}
+      onClick={() => {
+        if (fullscreen && onExitFullscreen) {
+          onExitFullscreen();
+        }
+      }}
     >
-      <canvas ref={canvasRef} className="w-full h-full block" />
+      {/* Ambient Dynamic Glow Behind ASCII */}
+      {fullscreen && (
+        <div
+          className="absolute w-[85vw] max-w-[1100px] h-[380px] rounded-full blur-[140px] opacity-25 pointer-events-none -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 transition-colors duration-700"
+          style={{ backgroundColor: themeConfig.palette.accent }}
+        />
+      )}
+
+      <canvas ref={canvasRef} className="w-full h-full block relative z-10" />
+
+      {/* Interactive Wake Instruction Badge (Prototype Landing Page Style) */}
+      {fullscreen && onExitFullscreen && (
+        <div className="absolute bottom-14 sm:bottom-16 left-0 right-0 z-30 flex flex-col items-center gap-3 font-mono text-center pointer-events-none">
+          <div className="flex items-center gap-2.5 text-xs tracking-widest text-white/75 bg-black/60 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10 shadow-lg">
+            <span style={{ color: themeConfig.palette.accent }} className="font-bold">&gt;</span>
+            <span className="uppercase tracking-widest font-medium">Michael Svendsen // AI Systems & Edge Architecture</span>
+            <span
+              className="inline-block w-1.5 h-1.5 rounded-full animate-ping"
+              style={{ backgroundColor: themeConfig.palette.accent }}
+            />
+          </div>
+
+          <div className="flex items-center gap-2 mt-1 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onExitFullscreen();
+              }}
+              className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 text-xs text-white/90 hover:text-white flex items-center gap-2.5 transition cursor-pointer shadow-xl backdrop-blur-md group"
+            >
+              <span style={{ color: themeConfig.palette.accent }} className="font-bold group-hover:translate-x-0.5 transition">↵</span>
+              <span>Press <kbd className="px-1.5 py-0.5 rounded bg-white/20 text-white font-mono text-[11px] border border-white/30">Space</kbd> or click to open desktop</span>
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                nextEffect();
+              }}
+              title="Switch Animation Effect (N)"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-full bg-black/60 hover:bg-black/80 border border-white/10 hover:border-white/30 text-xs text-white/70 hover:text-white transition cursor-pointer backdrop-blur-md"
+            >
+              <span className="text-white/40">Effect:</span>
+              <span className="text-white font-semibold">{currentEffect}</span>
+              <span className="text-white/40 ml-0.5">⇥</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Fullscreen Bottom OS Status Badges (Prototype Parity) */}
+      {fullscreen && (
+        <div className="absolute bottom-3 left-6 right-6 z-20 hidden sm:flex items-center justify-between text-[11px] font-mono text-white/35 pointer-events-none">
+          <div className="flex items-center gap-2">
+            <span>Terminal Graphics Engine // TTE Web</span>
+            <span>•</span>
+            <span style={{ color: themeConfig.palette.cyan }}>delta-corps-priest-1</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-emerald-400/80">{fps} FPS</span>
+            <span>•</span>
+            <span>hyprland 0.41</span>
+            <span>•</span>
+            <span>wayland compositor</span>
+          </div>
+        </div>
+      )}
 
       {/* CRT Scanline Grid Overlay */}
       {crtEnabled && (
@@ -436,86 +516,84 @@ export function ScreensaverCanvas({
           className="pointer-events-none absolute inset-0 z-10"
           style={{
             background:
-              "linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03))",
+              "linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 255, 0, 0.03))",
             backgroundSize: "100% 3px, 6px 100%",
           }}
         />
       )}
 
-      {/* Top Banner Status Bar */}
-      <div className="absolute top-3 left-4 right-4 z-20 flex items-center justify-between pointer-events-none">
-        <div className="flex items-center gap-2 pointer-events-auto bg-black/60 backdrop-blur-md px-2.5 py-1 rounded border border-white/10 text-xs text-white/70">
-          <span
-            className="w-2 h-2 rounded-full animate-pulse"
-            style={{ backgroundColor: themeConfig.palette.accent }}
-          />
-          <span className="font-semibold tracking-wider text-white">SVENDSEN</span>
-          <span className="text-white/20">|</span>
-          <span className="text-white/50">{currentEffect}</span>
-          <span className="text-white/20">•</span>
-          <span className="text-white/40">{lifecycleState.toLowerCase()}</span>
-        </div>
+      {/* Top Banner Status Bar (Only in inline desktop hero card) */}
+      {!fullscreen && (
+        <div
+          className="absolute top-3 left-4 right-4 z-30 flex items-center justify-between pointer-events-none"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center gap-2 pointer-events-auto bg-black/60 backdrop-blur-md px-2.5 py-1 rounded border border-white/10 text-xs text-white/70">
+            <span
+              className="w-2 h-2 rounded-full animate-pulse"
+              style={{ backgroundColor: themeConfig.palette.accent }}
+            />
+            <span className="font-semibold tracking-wider text-white">SVENDSEN</span>
+            <span className="text-white/20">|</span>
+            <span className="text-white/50">{currentEffect}</span>
+            <span className="text-white/20">•</span>
+            <span className="text-white/40">{lifecycleState.toLowerCase()}</span>
+          </div>
 
-        <div className="flex items-center gap-1.5 pointer-events-auto">
-          {/* Effect Selector */}
-          <select
-            value={currentEffect}
-            onChange={(e) => selectEffect(e.target.value as EffectType)}
-            className="bg-black/60 backdrop-blur-md text-xs text-white/80 border border-white/10 px-2 py-1 rounded outline-none cursor-pointer hover:border-white/20"
-          >
-            {EFFECTS_LIST.map((eff) => (
-              <option key={eff.id} value={eff.id} className="bg-zinc-900 text-white">
-                {eff.label}
-              </option>
-            ))}
-          </select>
-
-          {/* Next Button */}
-          <button
-            onClick={nextEffect}
-            title="Next Effect (N)"
-            className="bg-black/60 backdrop-blur-md text-xs text-white/70 hover:text-white px-2 py-1 rounded border border-white/10 hover:border-white/30 transition"
-          >
-            ⇥
-          </button>
-
-          {/* Auto Cycle Toggle */}
-          <button
-            onClick={() => setAutoCycle(!autoCycle)}
-            className={`text-xs px-2 py-1 rounded border backdrop-blur-md transition ${
-              autoCycle
-                ? "bg-white/10 border-white/30 text-white"
-                : "bg-black/60 border-white/10 text-white/40"
-            }`}
-            title="Auto Cycle Mode"
-          >
-            ⟳ {autoCycle ? "auto" : "manual"}
-          </button>
-
-          {fullscreen && onExitFullscreen && (
-            <button
-              onClick={onExitFullscreen}
-              className="bg-white/10 hover:bg-white/20 text-white text-xs px-2.5 py-1 rounded border border-white/20 transition"
+          <div className="flex items-center gap-1.5 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+            {/* Effect Selector */}
+            <select
+              value={currentEffect}
+              onChange={(e) => selectEffect(e.target.value as EffectType)}
+              className="bg-black/60 backdrop-blur-md text-xs text-white/80 border border-white/10 px-2 py-1 rounded outline-none cursor-pointer hover:border-white/20 font-mono"
             >
-              ✕ Exit (Esc)
-            </button>
-          )}
-        </div>
-      </div>
+              {EFFECTS_LIST.map((eff) => (
+                <option key={eff.id} value={eff.id} className="bg-zinc-900 text-white">
+                  {eff.label}
+                </option>
+              ))}
+            </select>
 
-      {/* Bottom Telemetry Bar */}
-      <div className="absolute bottom-2 left-4 right-4 z-20 flex items-center justify-between text-[11px] text-white/40 pointer-events-none">
-        <div className="flex items-center gap-2">
-          <span>FIGlet: Delta Corps Priest 1</span>
-          <span>•</span>
-          <span>TTE Procedural Engine</span>
+            {/* Next Button */}
+            <button
+              onClick={nextEffect}
+              title="Next Effect (N)"
+              className="bg-black/60 backdrop-blur-md text-xs text-white/70 hover:text-white px-2 py-1 rounded border border-white/10 hover:border-white/30 transition cursor-pointer"
+            >
+              ⇥
+            </button>
+
+            {/* Auto Cycle Toggle */}
+            <button
+              onClick={() => setAutoCycle(!autoCycle)}
+              className={`text-xs px-2 py-1 rounded border backdrop-blur-md transition cursor-pointer ${
+                autoCycle
+                  ? "bg-white/10 border-white/30 text-white"
+                  : "bg-black/60 border-white/10 text-white/40"
+              }`}
+              title="Auto Cycle Mode"
+            >
+              ⟳ {autoCycle ? "auto" : "manual"}
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-emerald-400/80">{fps} FPS</span>
-          <span>•</span>
-          <span>Canvas 2D Batching</span>
+      )}
+
+      {/* Bottom Telemetry Bar (Only in inline desktop hero card) */}
+      {!fullscreen && (
+        <div className="absolute bottom-2 left-4 right-4 z-20 flex items-center justify-between text-[11px] text-white/40 pointer-events-none">
+          <div className="flex items-center gap-2">
+            <span>FIGlet: Delta Corps Priest 1</span>
+            <span>•</span>
+            <span>TTE Procedural Engine</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-emerald-400/80">{fps} FPS</span>
+            <span>•</span>
+            <span>Canvas 2D Batching</span>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
