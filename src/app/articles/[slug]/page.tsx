@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { ARTICLES, getArticleBySlug } from "@/data/articles";
 import type { Metadata } from "next";
 
+import { renderMarkdown } from "@/lib/markdown";
+
 export function generateStaticParams() {
   return ARTICLES.map((article) => ({
     slug: article.slug,
@@ -37,6 +39,8 @@ export default async function ArticleDetailPage({
     notFound();
   }
 
+  const htmlContent = renderMarkdown(article.content);
+
   return (
     <div className="space-y-6 font-mono">
       {/* Breadcrumb Navigation */}
@@ -61,7 +65,7 @@ export default async function ArticleDetailPage({
               <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80 inline-block" />
               <span className="w-2.5 h-2.5 rounded-full bg-green-500/80 inline-block" />
             </span>
-            <span className="text-white font-bold px-2 py-0.5 rounded bg-white/10">
+            <span className="text-white font-bold px-2 py-0.5 rounded bg-white/10 font-mono">
               {article.slug}.md
             </span>
           </div>
@@ -71,7 +75,7 @@ export default async function ArticleDetailPage({
         {/* Content Body */}
         <div className="p-6 sm:p-10 space-y-6 text-white/90">
           <div className="border-b border-white/10 pb-5">
-            <div className="flex items-center gap-2 text-xs text-white/40 mb-2">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-white/40 mb-2">
               <span className="text-cyan-400 font-bold">[{article.category}]</span>
               <span>•</span>
               <span>{article.date}</span>
@@ -90,9 +94,9 @@ export default async function ArticleDetailPage({
 
           {/* Article Text Content */}
           <div
-            className="space-y-4 font-sans text-sm sm:text-base leading-relaxed text-white/85"
+            className="article-prose space-y-4"
             dangerouslySetInnerHTML={{
-              __html: formatMarkdownContent(article.content),
+              __html: htmlContent,
             }}
           />
         </div>
@@ -117,26 +121,4 @@ export default async function ArticleDetailPage({
       </div>
     </div>
   );
-}
-
-function formatMarkdownContent(raw: string): string {
-  return raw
-    .replace(/### (.*)/g, '<h3 class="text-lg font-bold text-white pt-4 font-mono">$1</h3>')
-    .replace(/## (.*)/g, '<h2 class="text-xl font-bold text-white pt-6 font-mono">$1</h2>')
-    .replace(
-      /> \[!NOTE\]\n> (.*)/g,
-      '<div class="p-3.5 my-3 rounded bg-cyan-950/30 border border-cyan-500/40 text-cyan-200 text-xs font-mono"><strong>[NOTE]:</strong> $1</div>'
-    )
-    .replace(
-      /> \[!TIP\]\n> (.*)/g,
-      '<div class="p-3.5 my-3 rounded bg-emerald-950/30 border border-emerald-500/40 text-emerald-200 text-xs font-mono"><strong>[TIP]:</strong> $1</div>'
-    )
-    .replace(
-      /> \[!IMPORTANT\]\n> (.*)/g,
-      '<div class="p-3.5 my-3 rounded bg-purple-950/30 border border-purple-500/40 text-purple-200 text-xs font-mono"><strong>[IMPORTANT]:</strong> $1</div>'
-    )
-    .replace(
-      /```([a-z]*)\n([\s\S]*?)```/g,
-      `<div class="rounded bg-black/80 border border-white/10 p-4 font-mono text-xs text-white/90 overflow-x-auto my-4"><div class="text-[10px] text-white/30 mb-1">$1</div><pre><code>$2</code></pre></div>`
-    );
 }

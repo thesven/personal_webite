@@ -4,6 +4,7 @@ import React from "react";
 import { Article } from "@/data/articles";
 import { useTheme } from "@/context/ThemeContext";
 import { playSwitchClick } from "@/lib/audio";
+import { renderMarkdown } from "@/lib/markdown";
 
 export function NeovimArticleModal({
   article,
@@ -78,14 +79,12 @@ export function NeovimArticleModal({
           </div>
 
           {/* Markdown Content */}
-          <div className="prose prose-invert max-w-none text-xs sm:text-sm leading-relaxed space-y-4">
-            <div
-              className="space-y-4 whitespace-pre-wrap font-sans text-white/85"
-              dangerouslySetInnerHTML={{
-                __html: formatMarkdownContent(article.content, themeConfig.palette.accent),
-              }}
-            />
-          </div>
+          <div
+            className="article-prose space-y-4"
+            dangerouslySetInnerHTML={{
+              __html: renderMarkdown(article.content),
+            }}
+          />
         </div>
 
         {/* Lualine Status Bar */}
@@ -111,27 +110,4 @@ export function NeovimArticleModal({
       </div>
     </div>
   );
-}
-
-function formatMarkdownContent(raw: string, accentColor: string): string {
-  // Simple markdown renderer for code blocks, headers, and callouts
-  return raw
-    .replace(/### (.*)/g, '<h3 class="text-base font-bold text-white pt-3 font-mono">$1</h3>')
-    .replace(/## (.*)/g, '<h2 class="text-lg font-bold text-white pt-4 font-mono">$1</h2>')
-    .replace(
-      /> \[!NOTE\]\n> (.*)/g,
-      '<div class="p-3 my-2 rounded bg-cyan-950/30 border border-cyan-500/40 text-cyan-200 text-xs font-mono"><strong>[NOTE]:</strong> $1</div>'
-    )
-    .replace(
-      /> \[!TIP\]\n> (.*)/g,
-      '<div class="p-3 my-2 rounded bg-emerald-950/30 border border-emerald-500/40 text-emerald-200 text-xs font-mono"><strong>[TIP]:</strong> $1</div>'
-    )
-    .replace(
-      /> \[!IMPORTANT\]\n> (.*)/g,
-      '<div class="p-3 my-2 rounded bg-purple-950/30 border border-purple-500/40 text-purple-200 text-xs font-mono"><strong>[IMPORTANT]:</strong> $1</div>'
-    )
-    .replace(
-      /```([a-z]*)\n([\s\S]*?)```/g,
-      `<div class="rounded bg-black/80 border border-white/10 p-4 font-mono text-xs text-white/90 overflow-x-auto my-3"><div class="text-[10px] text-white/30 mb-1">$1</div><pre><code>$2</code></pre></div>`
-    );
 }
