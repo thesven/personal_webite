@@ -57,28 +57,24 @@ export function FastfetchCard() {
             <span className="text-white font-semibold">Michael Svendsen</span>
           </div>
           <div className="flex items-center justify-between border-b border-white/5 pb-1">
-            <span className="text-white/40">Role:</span>
-            <span style={{ color: themeConfig.palette.cyan }}>Staff Systems & Distributed Infrastructure</span>
+            <span className="text-white/40">Focus:</span>
+            <span style={{ color: themeConfig.palette.cyan }}>AI Systems, MCP Edge & Distributed Architecture</span>
           </div>
           <div className="flex items-center justify-between border-b border-white/5 pb-1">
-            <span className="text-white/40">OS:</span>
-            <span>Arch Linux x86_64</span>
-          </div>
-          <div className="flex items-center justify-between border-b border-white/5 pb-1">
-            <span className="text-white/40">Kernel:</span>
-            <span>Linux 6.12.1-zen</span>
-          </div>
-          <div className="flex items-center justify-between border-b border-white/5 pb-1">
-            <span className="text-white/40">Compositor:</span>
-            <span>Hyprland (Wayland)</span>
+            <span className="text-white/40">Environment:</span>
+            <span>Linux x86_64 // Cloudflare Workers</span>
           </div>
           <div className="flex items-center justify-between border-b border-white/5 pb-1">
             <span className="text-white/40">Toolchain:</span>
-            <span style={{ color: themeConfig.palette.green }}>Rust • eBPF • C • TypeScript</span>
+            <span style={{ color: themeConfig.palette.green }}>TypeScript • Python • PyTorch • Hugging Face</span>
+          </div>
+          <div className="flex items-center justify-between border-b border-white/5 pb-1">
+            <span className="text-white/40">Open Source:</span>
+            <span>github.com/thesven (45+ Repos)</span>
           </div>
           <div className="flex items-center justify-between pt-1">
             <span className="text-white/40">Location:</span>
-            <span>Remote // Worldwide (UTC-8)</span>
+            <span>Toronto, Ontario, Canada (EST / UTC-5)</span>
           </div>
         </div>
       </div>

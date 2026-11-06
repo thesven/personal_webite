@@ -13,6 +13,83 @@ export interface Article {
 
 export const ARTICLES: Article[] = [
   {
+    slug: "architecting-litemcp-cloudflare-workers",
+    title: "Architecting LiteMCP: Bringing Model Context Protocol to Cloudflare Workers",
+    subtitle: "Implementing standards-compliant JSON-RPC 2.0 and Server-Sent Events on the serverless edge",
+    date: "2026-11-02",
+    readTime: "7 min read",
+    tags: ["#ai", "#mcp", "#cloudflare", "#typescript"],
+    category: "AI & Systems",
+    author: "Michael Svendsen",
+    summary: "Engineering a lightweight, edge-native Model Context Protocol framework for Cloudflare Workers with real-time SSE streaming, zero cold-starts, and strict type safety.",
+    content: `
+### 1. Why Edge-Native Model Context Protocol Matters
+
+The Model Context Protocol (MCP) by Anthropic established an open standard for LLM clients to communicate with external data sources, tools, and prompts. However, the reference implementation and community servers were largely designed for local desktop processes (via \`stdio\`) or heavyweight containerized Express runtimes.
+
+When building distributed AI workflows that need to respond globally with sub-50ms latency, running dedicated Node.js servers introduces unnecessary compute overhead and cold starts.
+
+\`\`\`text
+Client (Claude / Cursor / Web) ──(HTTP POST / SSE)──> Cloudflare Edge Worker (LiteMCP)
+                                                            │
+                                              JSON-RPC 2.0 Dispatcher
+                                                            │
+                                         [Tools]  [Prompts]  [Resources]
+\`\`\`
+
+> [!NOTE]
+> By eliminating Node.js-specific modules (\`net\`, \`child_process\`) and relying strictly on Web Standards (\`fetch\`, \`ReadableStream\`, \`TransformStream\`), MCP servers can deploy to Cloudflare's global network in under 200ms.
+
+### 2. Streaming Transports: SSE Without Heavy Runtimes
+
+In Cloudflare Workers, long-lived server-sent event (SSE) streams require careful memory and backpressure management. LiteMCP leverages the native \`TransformStream\` API:
+
+\`\`\`typescript
+export function createSSEStreamResponse(): { response: Response; writer: WritableStreamDefaultWriter<Uint8Array> } {
+  const { readable, writable } = new TransformStream();
+  const writer = writable.getWriter();
+  const encoder = new TextEncoder();
+
+  const response = new Response(readable, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-transform",
+      "Connection": "keep-alive",
+      "Access-Control-Allow-Origin": "*",
+    },
+  });
+
+  return { response, writer };
+}
+\`\`\`
+
+### 3. Standards-Compliant JSON-RPC 2.0 Pipeline
+
+LiteMCP dispatches incoming requests against registered tool schemas, handling validation, error codes (-32601 for Method Not Found, -32602 for Invalid Params), and batch executions deterministically.
+
+\`\`\`typescript
+server.registerTool({
+  name: "query_device_telemetry",
+  description: "Fetches live sensor telemetry from cellular trail cameras",
+  parameters: {
+    deviceId: { type: "string", required: true },
+    metric: { type: "string", enum: ["battery", "signal", "temperature"] },
+  },
+  handler: async ({ deviceId, metric }) => {
+    const data = await fetchDeviceMetric(deviceId, metric);
+    return { content: [{ type: "text", text: JSON.stringify(data) }] };
+  },
+});
+\`\`\`
+
+### 4. Conclusion & Next Frontiers
+
+Running MCP at the edge transforms AI agent interaction: tools become globally accessible, zero-cold-start APIs capable of querying IoT cameras, telemetry databases, and custom datasets in real time.
+
+Check out the project on GitHub: [thesven/LiteMCP](https://github.com/thesven/LiteMCP).
+    `.trim(),
+  },
+  {
     slug: "zero-copy-deserialization-rust",
     title: "Zero-Copy Deserialization: Lessons in High-Throughput Memory Geometry",
     subtitle: "Eliminating allocation overhead in telemetry ingestion pipelines with eBPF and FlatBuffers",

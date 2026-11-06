@@ -16,17 +16,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Michael Svendsen — Systems Architecture & Engineering Publication",
+  title: "Michael Svendsen — AI Systems & Edge Architecture",
   description:
-    "High-craft personal website, systems architecture showcase, and technical publication platform by Michael Svendsen.",
+    "Personal engineering portfolio, Model Context Protocol (MCP) edge architecture, open-source AI tooling, and technical publications by Michael Svendsen.",
   keywords: [
     "Michael Svendsen",
-    "Systems Architecture",
-    "eBPF",
-    "Linux Kernel",
-    "Wayland",
-    "Rust",
-    "Terminal Text Effects",
+    "Model Context Protocol",
+    "MCP",
+    "Cloudflare Workers",
+    "Edge AI",
+    "LLM Quantization",
+    "GGUF",
+    "TypeScript",
+    "Python",
+    "Wildlife Photography",
   ],
   authors: [{ name: "Michael Svendsen" }],
 };
@@ -48,9 +51,9 @@ export default function RootLayout({
             {children}
           </main>
           <footer className="border-t border-white/10 py-6 text-center text-xs text-white/40 font-mono">
-            <div>Michael Svendsen • Independent Systems Architecture & Publication</div>
+            <div>Michael Svendsen • AI Systems & Edge Engineering • Toronto, ON</div>
             <div className="text-[10px] text-white/25 mt-1">
-              Static Edge Build • Cloudflare Pages Free Plan Ready • No Database Required
+              Static Edge Build • Cloudflare Pages • zero-database architecture
             </div>
           </footer>
         </ThemeProvider>

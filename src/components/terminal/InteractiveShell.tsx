@@ -64,9 +64,9 @@ export function InteractiveShell() {
       case "whoami":
         output = (
           <div className="text-white/80 space-y-1">
-            <div>Michael Svendsen</div>
-            <div className="text-white/50">Staff Systems Architect & Infrastructure Engineer</div>
-            <div>Specializing in low-latency Linux kernels, eBPF telemetry, and high-performance terminal UX.</div>
+            <div>Michael Svendsen (Toronto, Ontario)</div>
+            <div className="text-white/50">AI Systems, MCP Edge Architecture & TypeScript Engineer</div>
+            <div>Author of LiteMCP, GGUF-n-Go, and open-source fine-tuned models on Hugging Face. Wildlife photographer based in Ontario.</div>
           </div>
         );
         break;

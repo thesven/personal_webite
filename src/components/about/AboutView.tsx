@@ -5,46 +5,48 @@ import { useTheme } from "@/context/ThemeContext";
 
 const CAREER_COMMITS = [
   {
-    hash: "a9f82d1",
-    date: "2023 - Present",
-    role: "Principal Systems Architect",
-    company: "Distributed Telemetry Infrastructure",
-    message: "feat(core): architect zero-copy kernel ingestion engine processing 10M+ pkts/sec",
+    hash: "f4a81c2",
+    date: "2024 - Present",
+    role: "AI Systems & Edge Protocol Engineer",
+    company: "Open Source AI & Cloudflare Edge",
+    message: "feat(mcp): architect LiteMCP edge framework & automated GGUF quantization pipelines",
     details: [
-      "Designed eBPF-based distributed observability daemon reducing node memory footprint by 65%.",
-      "Unified Wayland desktop telemetry protocol for real-time fleet diagnostics.",
+      "Engineered LiteMCP, a Cloudflare Worker-native Model Context Protocol framework supporting JSON-RPC 2.0 and Server-Sent Events.",
+      "Built GGUF-n-Go to automate Hugging Face model quantization for local inference on llama.cpp and Ollama.",
+      "Fine-tuned code generation models (Aether-Qwen, CodeBagel) using PEFT/LoRA and curated community preference datasets.",
     ],
   },
   {
-    hash: "c41e809",
-    date: "2020 - 2023",
-    role: "Staff Infrastructure Engineer",
-    company: "Cloud Native Systems Lab",
-    message: "refactor(k8s): deploy bare-metal Kubernetes clusters with Cilium eBPF mesh",
+    hash: "b9e2301",
+    date: "2020 - 2024",
+    role: "Staff Software & Infrastructure Engineer",
+    company: "Distributed Systems & Telemetry Labs",
+    message: "feat(sdk): build typed telemetry clients and edge streaming infrastructures",
     details: [
-      "Eliminated iptables kube-proxy overhead via eBPF XDP socket acceleration.",
-      "Engineered lock-free message ring buffers for multi-tenant streaming services.",
+      "Designed iracing-data-sdk, providing end-to-end typed schemas and rate-limit managers for high-frequency telemetry.",
+      "Architected serverless edge pipelines and automated deployments with Cloudflare Pages and SST Ion.",
+      "Implemented zero-dependency binary parsers for multimedia streams and CIELAB perceptual color spaces.",
     ],
   },
   {
-    hash: "7b23aa4",
-    date: "2017 - 2020",
-    role: "Senior Systems Engineer",
-    company: "Low-Latency Networks",
-    message: "perf(ipc): implement shared-memory zero-copy RPC framework",
+    hash: "6d10fa4",
+    date: "2015 - 2020",
+    role: "Senior Full-Stack & Systems Developer",
+    company: "Modern Web & Data Solutions",
+    message: "refactor(data): develop real-time event parsers, SDKs, and interactive client runtimes",
     details: [
-      "Built deterministic event loops in Rust and C with strict sub-microsecond jitter budgets.",
-      "Optimized cache-line alignment and false-sharing mitigation across AMD EPYC sockets.",
+      "Constructed modular TypeScript utilities, token replacement engines, and high-performance client libraries.",
+      "Developed robust state management and event brokers for real-time applications and simulation tooling.",
     ],
   },
 ];
 
 const SKILL_METERS = [
-  { name: "Distributed Systems & Ingestion", level: 95, bar: "[██████████░]" },
-  { name: "Linux Kernel, eBPF & Systems C/Rust", level: 92, bar: "[█████████░░]" },
-  { name: "Wayland IPC, DRM & Compositor Tech", level: 88, bar: "[████████░░░]" },
-  { name: "TypeScript, Canvas & TUI Tooling", level: 90, bar: "[█████████░░]" },
-  { name: "Bare-Metal Linux, NixOS & Cilium", level: 86, bar: "[████████░░░]" },
+  { name: "Model Context Protocol (MCP) & Edge Workers", level: 96, bar: "[██████████░]" },
+  { name: "TypeScript, Node.js & Production SDKs", level: 94, bar: "[█████████░░]" },
+  { name: "LLM Fine-Tuning & GGUF Quantization (PEFT/TRL)", level: 90, bar: "[█████████░░]" },
+  { name: "Python, PyTorch & Data Pipelines", level: 88, bar: "[████████░░░]" },
+  { name: "Edge Web Architecture (Next.js, SST, Cloudflare)", level: 92, bar: "[█████████░░]" },
 ];
 
 const PGP_FINGERPRINT = "4A92 F81C 023E B7D8 99A1 7F04 5356 454E 4D53 2026";
@@ -72,11 +74,11 @@ export function AboutView() {
         }}
       >
         <div className="flex items-center justify-between pb-2 border-b border-white/10 text-white/40">
-          <span className="font-bold text-white/80">BIO // ARCHITECTURAL PHILOSOPHY</span>
-          <span>MICHAEL SVENDSEN</span>
+          <span className="font-bold text-white/80">BIO // ENGINEERING PHILOSOPHY</span>
+          <span>MICHAEL SVENDSEN • TORONTO, CA</span>
         </div>
         <p className="text-white/80 text-xs sm:text-sm leading-relaxed font-sans">
-          I am a systems architect and software engineer dedicated to building low-latency, deterministic, and resilient infrastructure. My craft spans kernel-level observability via eBPF, lock-free concurrency geometry, and minimalist terminal aesthetics. I believe the best software is fast, transparent, and built to endure without unnecessary dependencies or runtime bloat.
+          I am a software engineer and systems architect based in Toronto, Ontario, dedicated to building resilient edge computing systems, Model Context Protocol (MCP) integrations, and developer tooling. My recent work focuses on serverless AI runtimes on Cloudflare Workers, automated LLM quantization pipelines, and instruction-tuned code generation models on Hugging Face. Beyond computing, I am a wildlife and astrophotographer documenting Ontario’s skies and natural ecosystems.
         </p>
       </div>
 
@@ -161,37 +163,64 @@ export function AboutView() {
         >
           <div>
             <div className="font-bold text-white pb-2 border-b border-white/10 flex items-center justify-between">
-              <span>PGP SECURITY KEYCARD</span>
+              <span>SECURITY & VERIFIED PROFILES</span>
               <span className="text-emerald-400 text-[10px]">VERIFIED</span>
             </div>
             <div className="mt-2 text-white/50 text-[11px]">
-              Fingerprint:
+              PGP Key Fingerprint:
             </div>
             <div className="p-2.5 rounded bg-black/60 border border-white/10 font-mono text-[11px] text-white/80 break-all select-all mt-1">
               {PGP_FINGERPRINT}
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-2 border-t border-white/5">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-white/5">
             <button
               onClick={copyPgp}
-              className="px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-white transition text-xs"
+              className="px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-white transition text-xs cursor-pointer"
             >
               {copied ? "✓ Copied Key" : "Copy PGP Key"}
             </button>
-            <div className="flex items-center gap-3 text-white/40">
+            <div className="flex flex-wrap items-center gap-2 text-white/60 text-[11px]">
+              <a
+                href="https://www.linkedin.com/in/mikesven/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-cyan-300 transition"
+              >
+                LinkedIn
+              </a>
+              <span>•</span>
               <a
                 href="https://github.com/thesven"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-white transition"
+                className="hover:text-cyan-300 transition"
               >
                 GitHub
               </a>
               <span>•</span>
               <a
-                href="mailto:contact@thesven.dev"
-                className="hover:text-white transition"
+                href="https://huggingface.co/thesven"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-cyan-300 transition"
+              >
+                Hugging Face
+              </a>
+              <span>•</span>
+              <a
+                href="https://photography.mikesvendsen.net"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-cyan-300 transition"
+              >
+                Photography
+              </a>
+              <span>•</span>
+              <a
+                href="mailto:michael@mikesvendsen.net"
+                className="hover:text-cyan-300 transition"
               >
                 Email
               </a>
