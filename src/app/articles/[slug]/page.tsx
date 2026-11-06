@@ -5,6 +5,7 @@ import { ARTICLES, getArticleBySlug } from "@/data/articles";
 import type { Metadata } from "next";
 import { renderMarkdown } from "@/lib/markdown";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { ArticleContent } from "@/components/articles/ArticleContent";
 import { getArticleSchema, getBreadcrumbSchema, SITE_URL } from "@/lib/seo";
 
 export function generateStaticParams() {
@@ -180,13 +181,7 @@ export default async function ArticleDetailPage({
             </aside>
 
             {/* Article Markdown HTML Content */}
-            <div
-              itemProp="articleBody"
-              className="article-prose space-y-4"
-              dangerouslySetInnerHTML={{
-                __html: htmlContent,
-              }}
-            />
+            <ArticleContent html={htmlContent} itemProp="articleBody" />
 
             {/* AEO / LLM Citation & Reference Box */}
             <footer className="mt-10 pt-6 border-t border-white/10 text-xs text-white/50 space-y-2 font-mono">

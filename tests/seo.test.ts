@@ -61,6 +61,10 @@ describe("SEO, Schema.org and JSON-LD Structured Data", () => {
     expect(schema.proficiencyLevel).toBe("Expert");
     expect(schema.mainEntityOfPage["@id"]).toBe(`${SITE_URL}/articles/${article.slug}/`);
     expect(schema.wordCount).toBeGreaterThan(50);
+    expect(schema.speakable).toEqual({
+      "@type": "SpeakableSpecification",
+      cssSelector: ["[role='doc-abstract']", "h1"],
+    });
   });
 
   it("generates valid ItemList schema for articles list", () => {
@@ -90,5 +94,18 @@ describe("SEO, Schema.org and JSON-LD Structured Data", () => {
       expect(item.acceptedAnswer["@type"]).toBe("Answer");
       expect(item.acceptedAnswer.text.length).toBeGreaterThan(20);
     });
+  });
+
+  it("handles breadcrumb relative URLs without leading slash and empty article content", () => {
+    const breadcrumb = getBreadcrumbSchema([
+      { name: "Docs", url: "docs" },
+    ]);
+    expect(breadcrumb.itemListElement[0].item).toBe(`${SITE_URL}/docs`);
+
+    const emptyArticleSchema = getArticleSchema({
+      ...ARTICLES[0],
+      content: "",
+    });
+    expect(emptyArticleSchema.wordCount).toBe(0);
   });
 });

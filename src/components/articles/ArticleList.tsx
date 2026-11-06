@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { Article, getAllTags, getAllCategories, getTagCounts, filterArticles } from "@/data/articles";
 import { useTheme } from "@/context/ThemeContext";
@@ -17,12 +17,23 @@ export function ArticleList({
   const [selectedTag, setSelectedTag] = useState("ALL");
   const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
 
-  const allTags = ["ALL", ...getAllTags()];
-  const allCategories = ["ALL", ...getAllCategories()];
-  const tagCounts = getTagCounts(articles);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 150);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
 
-  const filtered = filterArticles(articles, searchQuery, selectedTag, selectedCategory);
+  const allTags = useMemo(() => ["ALL", ...getAllTags()], []);
+  const allCategories = useMemo(() => ["ALL", ...getAllCategories()], []);
+  const tagCounts = useMemo(() => getTagCounts(articles), [articles]);
+
+  const filtered = useMemo(
+    () => filterArticles(articles, debouncedQuery, selectedTag, selectedCategory),
+    [articles, debouncedQuery, selectedTag, selectedCategory]
+  );
 
   return (
     <div className="space-y-4 font-mono text-xs">

@@ -2,6 +2,15 @@ import { Article, ARTICLES } from "@/data/articles";
 import { Project, PROJECTS } from "@/data/projects";
 import { SITE_URL } from "@/lib/seo";
 
+export function computeContentHash(content: string): string {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < content.length; i++) {
+    hash ^= content.charCodeAt(i);
+    hash = (hash * 0x01000193) >>> 0;
+  }
+  return hash.toString(16).padStart(8, "0");
+}
+
 export function generateLlmsTxt(
   articles: Article[] = ARTICLES,
   projects: Project[] = PROJECTS,
@@ -34,6 +43,7 @@ export function generateLlmsTxt(
 - Hugging Face: https://huggingface.co/thesven
 - Photography: https://photography.mikesvendsen.net
 - RSS Feed: ${cleanUrl}/feed.xml
+- JSON Feed: ${cleanUrl}/feed.json
 - Full LLM Corpus: ${cleanUrl}/llms-full.txt
 
 ## Primary Workspaces & System Overview

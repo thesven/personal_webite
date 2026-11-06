@@ -5,6 +5,7 @@ import { Article } from "@/data/articles";
 import { useTheme } from "@/context/ThemeContext";
 import { playSwitchClick } from "@/lib/audio";
 import { renderMarkdown } from "@/lib/markdown";
+import { ArticleContent } from "@/components/articles/ArticleContent";
 
 export function NeovimArticleModal({
   article,
@@ -79,12 +80,7 @@ export function NeovimArticleModal({
           </div>
 
           {/* Markdown Content */}
-          <div
-            className="article-prose space-y-4"
-            dangerouslySetInnerHTML={{
-              __html: renderMarkdown(article.content),
-            }}
-          />
+          <ArticleContent html={renderMarkdown(article.content)} />
         </div>
 
         {/* Lualine Status Bar */}

@@ -3,12 +3,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTheme, THEMES, ThemeId } from "@/context/ThemeContext";
+import { ARTICLES } from "@/data/articles";
+import { PROJECTS } from "@/data/projects";
 import { playSwitchClick } from "@/lib/audio";
 
 interface CommandItem {
   id: string;
-  category: "WORKSPACES" | "THEMES" | "SYSTEM";
+  category: "WORKSPACES" | "THEMES" | "SYSTEM" | "ARTICLES" | "PROJECTS";
   title: string;
+  subtitle?: string;
   shortcut?: string;
   action: () => void;
 }
@@ -20,9 +23,16 @@ function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
+    previousFocusRef.current = typeof document !== "undefined" ? (document.activeElement as HTMLElement | null) : null;
     inputRef.current?.focus();
+
+    return () => {
+      previousFocusRef.current?.focus?.();
+    };
   }, []);
 
   const commands: CommandItem[] = [
@@ -73,6 +83,20 @@ function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
       title: "Toggle Synthesized Mechanical Audio Haptics",
       action: toggleSound,
     },
+    ...ARTICLES.map((a) => ({
+      id: `article-${a.slug}`,
+      category: "ARTICLES" as const,
+      title: a.title,
+      subtitle: `${a.category} • ${a.readTime}`,
+      action: () => router.push(`/articles/${a.slug}`),
+    })),
+    ...PROJECTS.map((p) => ({
+      id: `project-${p.slug}`,
+      category: "PROJECTS" as const,
+      title: p.title,
+      subtitle: `${p.category} • ${p.version}`,
+      action: () => router.push("/projects"),
+    })),
     ...Object.values(THEMES).map((t) => ({
       id: `theme-${t.id}`,
       category: "THEMES" as const,
@@ -81,8 +105,11 @@ function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
     })),
   ];
 
+  const q = query.toLowerCase().trim();
   const filteredCommands = commands.filter((cmd) =>
-    cmd.title.toLowerCase().includes(query.toLowerCase())
+    cmd.title.toLowerCase().includes(q) ||
+    cmd.category.toLowerCase().includes(q) ||
+    (cmd.subtitle && cmd.subtitle.toLowerCase().includes(q))
   );
 
   const executeCommand = (cmd: CommandItem) => {
@@ -100,6 +127,15 @@ function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
       setSelectedIndex((prev) =>
         prev === 0 ? Math.max(0, filteredCommands.length - 1) : prev - 1
       );
+    } else if (e.key === "Tab") {
+      e.preventDefault();
+      if (e.shiftKey) {
+        setSelectedIndex((prev) =>
+          prev === 0 ? Math.max(0, filteredCommands.length - 1) : prev - 1
+        );
+      } else {
+        setSelectedIndex((prev) => (prev + 1) % Math.max(1, filteredCommands.length));
+      }
     } else if (e.key === "Enter") {
       e.preventDefault();
       const target = filteredCommands[selectedIndex];
@@ -116,6 +152,10 @@ function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Command Palette"
         className="w-full max-w-xl rounded-lg border shadow-2xl overflow-hidden font-mono text-xs transition-all"
         style={{
           backgroundColor: themeConfig.palette.card,
@@ -137,7 +177,8 @@ function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
               setSelectedIndex(0);
             }}
             onKeyDown={handleKeyDown}
-            placeholder="Type a command or search workspace... (Esc to exit)"
+            aria-label="Search commands, workspaces, articles, or projects"
+            placeholder="Type a command, article, or project... (Esc to exit)"
             className="w-full bg-transparent text-white outline-none placeholder:text-white/30 text-xs"
           />
           <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-[10px] text-white/50 border border-white/10">
@@ -172,11 +213,16 @@ function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
                       : {}
                   }
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-white/30 tracking-wider">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-[10px] text-white/30 tracking-wider shrink-0">
                       [{cmd.category}]
                     </span>
-                    <span>{cmd.title}</span>
+                    <span className="truncate">{cmd.title}</span>
+                    {cmd.subtitle && (
+                      <span className="text-[10px] text-white/40 shrink-0 truncate">
+                        — {cmd.subtitle}
+                      </span>
+                    )}
                   </div>
                   {cmd.shortcut && (
                     <kbd className="px-1.5 py-0.5 rounded bg-black/40 text-[10px] text-white/50 border border-white/10">

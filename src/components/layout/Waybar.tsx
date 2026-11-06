@@ -31,13 +31,41 @@ export function Waybar() {
   const isRootScreensaver = pathname === "/";
 
   useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+
     const updateTime = () => {
       const now = new Date();
       setClock(now.toTimeString().split(" ")[0]);
     };
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
+
+    const startClock = () => {
+      if (interval || document.hidden) return;
+      updateTime();
+      interval = setInterval(updateTime, 1000);
+    };
+
+    const stopClock = () => {
+      if (interval) {
+        clearInterval(interval);
+        interval = null;
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        stopClock();
+      } else {
+        startClock();
+      }
+    };
+
+    startClock();
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      stopClock();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
   const handleModeToggle = () => {

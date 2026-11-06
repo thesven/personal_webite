@@ -1,0 +1,10 @@
+# Legacy feed redirects
+/rss          /feed.xml  301
+/rss.xml      /feed.xml  301
+/atom.xml     /feed.xml  301
+
+# Clean canonical trailing slash redirects
+/sys          /sys/      301
+/articles     /articles/ 301
+/projects     /projects/ 301
+/about        /about/    301

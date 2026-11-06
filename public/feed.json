@@ -1,0 +1,180 @@
+{
+  "version": "https://jsonfeed.org/version/1.1",
+  "title": "Michael Svendsen — Systems Publications",
+  "home_page_url": "https://michael-svendsen.dev/",
+  "feed_url": "https://michael-svendsen.dev/feed.json",
+  "description": "Production analytics, AWS Bedrock AgentCore, Model Context Protocol (MCP), and open-source AI tooling by Michael Svendsen.",
+  "authors": [
+    {
+      "name": "Michael Svendsen",
+      "url": "https://michael-svendsen.dev",
+      "avatar": "https://michael-svendsen.dev/og-image.png"
+    }
+  ],
+  "language": "en",
+  "items": [
+    {
+      "id": "https://michael-svendsen.dev/articles/snowflake-dbt-shopify-ecommerce-analytics/",
+      "url": "https://michael-svendsen.dev/articles/snowflake-dbt-shopify-ecommerce-analytics/",
+      "title": "Architecting a Resilient E-Commerce Analytics Engine: Snowflake, dbt & The Single Source of Truth for Autonomous Agents",
+      "summary": "When building high-volume e-commerce platforms, bolting AI agents onto disparate data stores creates fatal metric dissonance. Here is how to engineer a production-grade analytics foundation using Snowflake and dbt that cuts query times by 50% while serving as the authoritative single source of truth for both merchant dashboards and autonomous AI agents.",
+      "date_published": "2026-07-15T00:00:00.000Z",
+      "tags": [
+        "#data-engineering",
+        "#snowflake",
+        "#dbt",
+        "#ai-agents",
+        "#shopify",
+        "#sql"
+      ],
+      "authors": [
+        {
+          "name": "Michael Svendsen"
+        }
+      ]
+    },
+    {
+      "id": "https://michael-svendsen.dev/articles/spypoint-mcp-trail-camera-ai/",
+      "url": "https://michael-svendsen.dev/articles/spypoint-mcp-trail-camera-ai/",
+      "title": "SPYPOINT MCP: Bridging Cellular Trail-Camera Telemetry with AI Vision Agents",
+      "summary": "Trail cameras capture thousands of photos, but turning raw cellular photo streams into actionable field intelligence requires more than simple image downloads. Here is how I engineered an open-source Model Context Protocol (MCP) server for SPYPOINT cellular cameras—featuring burst clustering algorithms that group 146 photos into 14 distinct visits, strict read-only safety guardrails, and automated contact sheet generation.",
+      "date_published": "2026-10-08T00:00:00.000Z",
+      "tags": [
+        "#mcp",
+        "#python",
+        "#iot",
+        "#wildlife-photography",
+        "#ai",
+        "#testing"
+      ],
+      "authors": [
+        {
+          "name": "Michael Svendsen"
+        }
+      ]
+    },
+    {
+      "id": "https://michael-svendsen.dev/articles/architecting-litemcp-cloudflare-workers/",
+      "url": "https://michael-svendsen.dev/articles/architecting-litemcp-cloudflare-workers/",
+      "title": "Architecting LiteMCP: Bringing Model Context Protocol to Cloudflare Workers",
+      "summary": "Anthropic's Model Context Protocol (MCP) revolutionizes how LLMs interact with external tools and data, but official SDKs rely heavily on Node.js internals like stdio, net, and child_process. Here is how I architected LiteMCP—a high-performance, edge-native TypeScript framework designed specifically for Cloudflare Workers with zero cold starts, Web Standards SSE streaming, and full JSON-RPC 2.0 compliance.",
+      "date_published": "2026-11-02T00:00:00.000Z",
+      "tags": [
+        "#ai",
+        "#mcp",
+        "#cloudflare",
+        "#typescript",
+        "#edge-computing",
+        "#serverless"
+      ],
+      "authors": [
+        {
+          "name": "Michael Svendsen"
+        }
+      ]
+    },
+    {
+      "id": "https://michael-svendsen.dev/articles/multi-agent-orchestration-bedrock-agentcore/",
+      "url": "https://michael-svendsen.dev/articles/multi-agent-orchestration-bedrock-agentcore/",
+      "title": "Multi-Agent Orchestration with AWS Bedrock AgentCore: Autonomous Storefront Optimization",
+      "summary": "Most enterprise AI features remain bolted-on chatbots generating dead text that cannot mutate state. In this architectural deep dive, we examine how to orchestrate autonomous multi-agent systems using Amazon Bedrock AgentCore and CopilotKit for a high-volume mobile e-commerce platform—turning high-level merchant directives into live, verified storefront layouts with zero server management.",
+      "date_published": "2026-05-18T00:00:00.000Z",
+      "tags": [
+        "#aws",
+        "#bedrock",
+        "#agentcore",
+        "#copilotkit",
+        "#multi-agent",
+        "#typescript",
+        "#architecture"
+      ],
+      "authors": [
+        {
+          "name": "Michael Svendsen"
+        }
+      ]
+    },
+    {
+      "id": "https://michael-svendsen.dev/articles/automating-gguf-quantization-huggingface/",
+      "url": "https://michael-svendsen.dev/articles/automating-gguf-quantization-huggingface/",
+      "title": "Automating GGUF Quantization: Bridging Hugging Face Transformers to Local Runtimes",
+      "summary": "While open-source inference engines like llama.cpp and Ollama have democratized local LLMs, converting raw Hugging Face checkpoints into production-grade GGUF binaries remains a minefield of broken tokenizers, out-of-memory crashes on sharded safetensors, and ad-hoc quantization flags. Here is how I built GGUF-n-Go to fully automate end-to-end model quantization and multi-precision matrix deployment.",
+      "date_published": "2026-04-12T00:00:00.000Z",
+      "tags": [
+        "#llm",
+        "#gguf",
+        "#quantization",
+        "#huggingface",
+        "#python",
+        "#machine-learning",
+        "#performance"
+      ],
+      "authors": [
+        {
+          "name": "Michael Svendsen"
+        }
+      ]
+    },
+    {
+      "id": "https://michael-svendsen.dev/articles/architecting-iracing-telemetry-sdk-typescript/",
+      "url": "https://michael-svendsen.dev/articles/architecting-iracing-telemetry-sdk-typescript/",
+      "title": "Designing a High-Frequency Motorsport Telemetry SDK: Reverse-Engineering & Type-Safe Architecture in TypeScript",
+      "summary": "Sim racing telemetry powers real-time driver coaching, team endurance race strategy, and championship analytics. But iRacing's REST API is notorious for aggressive rate limits, asynchronous two-step S3 pre-signed downloads, and shifting JSON schemas. Here is how I architected iracing-data-sdk in TypeScript to provide bulletproof token-bucket throttling, rolling session management, and end-to-end type safety.",
+      "date_published": "2026-03-02T00:00:00.000Z",
+      "tags": [
+        "#typescript",
+        "#sdk",
+        "#telemetry",
+        "#performance",
+        "#nodejs",
+        "#motorsport",
+        "#api-design"
+      ],
+      "authors": [
+        {
+          "name": "Michael Svendsen"
+        }
+      ]
+    },
+    {
+      "id": "https://michael-svendsen.dev/articles/parsing-binary-gif-streams-cielab-typescript/",
+      "url": "https://michael-svendsen.dev/articles/parsing-binary-gif-streams-cielab-typescript/",
+      "title": "Binary Stream Parsing & Perceptual Color Extraction: Building @mikesven/gif-parser",
+      "summary": "Most image processing in JavaScript depends on native C++ bindings like Sharp or libvips, which fail inside lightweight serverless isolates like Cloudflare Workers. Here is how I engineered @mikesven/gif-parser: a zero-dependency TypeScript engine that parses raw GIF87a/89a binary byte streams using DataView and implements CIELAB Delta-E color science for perceptually accurate palette extraction.",
+      "date_published": "2026-01-20T00:00:00.000Z",
+      "tags": [
+        "#typescript",
+        "#binary",
+        "#graphics",
+        "#color-science",
+        "#npm",
+        "#algorithms"
+      ],
+      "authors": [
+        {
+          "name": "Michael Svendsen"
+        }
+      ]
+    },
+    {
+      "id": "https://michael-svendsen.dev/articles/serverless-photography-sst-ion-cloudflare/",
+      "url": "https://michael-svendsen.dev/articles/serverless-photography-sst-ion-cloudflare/",
+      "title": "Deploying a High-Resolution Photography Platform: SST Ion, Cloudflare Pages, and Edge Caching",
+      "summary": "Displaying fine-art wildlife and astrophotography on the web requires balancing 45-megapixel raw fidelity with sub-second page loads on mobile devices. Here is how I architected photography.mikesvendsen.net using SST Ion, Cloudflare Pages, static manifest extraction, and responsive AVIF/WebP srcset generation—delivering a zero-database gallery with global edge caching.",
+      "date_published": "2025-11-14T00:00:00.000Z",
+      "tags": [
+        "#cloudflare",
+        "#sst",
+        "#nextjs",
+        "#photography",
+        "#web-perf",
+        "#edge-architecture"
+      ],
+      "authors": [
+        {
+          "name": "Michael Svendsen"
+        }
+      ]
+    }
+  ]
+}

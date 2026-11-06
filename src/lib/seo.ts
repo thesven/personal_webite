@@ -118,6 +118,10 @@ export function getArticleSchema(article: Article) {
     keywords: article.tags.join(", "),
     articleSection: article.category,
     proficiencyLevel: "Expert",
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["[role='doc-abstract']", "h1"],
+    },
     wordCount,
     articleBody: article.content,
   };

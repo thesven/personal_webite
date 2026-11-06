@@ -20,21 +20,52 @@ export function TelemetryGauges() {
   });
 
   useEffect(() => {
-    if (isPaused) return;
-    const timer = setInterval(() => {
-      setMetrics({
-        cpu: Math.floor(12 + Math.random() * 15),
-        ram: +(4.1 + Math.random() * 0.3).toFixed(1),
-        ebpfEvents: Math.floor(2200 + Math.random() * 500),
-        drmFPS: 143 + Math.floor(Math.random() * 2),
-      });
-      setProcs(generateProcessList());
-    }, 2000);
-    return () => clearInterval(timer);
+    let timer: NodeJS.Timeout | null = null;
+
+    const startTimer = () => {
+      if (timer || isPaused || document.hidden) return;
+      timer = setInterval(() => {
+        setMetrics({
+          cpu: Math.floor(12 + Math.random() * 15),
+          ram: +(4.1 + Math.random() * 0.3).toFixed(1),
+          ebpfEvents: Math.floor(2200 + Math.random() * 500),
+          drmFPS: 143 + Math.floor(Math.random() * 2),
+        });
+        setProcs(generateProcessList());
+      }, 2000);
+    };
+
+    const stopTimer = () => {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        stopTimer();
+      } else {
+        startTimer();
+      }
+    };
+
+    if (!isPaused && !document.hidden) {
+      startTimer();
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      stopTimer();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [isPaused]);
 
   return (
     <div
+      role="status"
+      aria-live="polite"
       className="rounded-lg border p-4 font-mono text-xs shadow-lg transition-colors"
       style={{
         backgroundColor: themeConfig.palette.card,

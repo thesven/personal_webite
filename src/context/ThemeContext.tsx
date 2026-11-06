@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useTransition } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { playSwitchClick } from "@/lib/audio";
+import { playSwitchClick, syncAudioState } from "@/lib/audio";
 import { resolveNavigationKey } from "@/lib/navigation";
 
 export type ThemeId = "tokyonight" | "flexoki" | "oxocarbon" | "catppuccin" | "monochrome";
@@ -172,6 +172,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     playSwitchClick("up", soundEnabled);
   };
 
+  useEffect(() => {
+    syncAudioState(soundEnabled);
+  }, [soundEnabled]);
+
   const toggleSound = () => {
     const next = !soundEnabled;
     setSoundEnabled(next);
@@ -191,6 +195,24 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   };
 
   const themeConfig = THEMES[theme] || THEMES.tokyonight;
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const root = document.documentElement;
+    root.setAttribute("data-theme", theme);
+    const p = themeConfig.palette;
+    root.style.setProperty("--theme-bg", p.bg);
+    root.style.setProperty("--theme-card", p.card);
+    root.style.setProperty("--theme-border", p.border);
+    root.style.setProperty("--theme-text", p.text);
+    root.style.setProperty("--theme-muted", p.muted);
+    root.style.setProperty("--theme-accent", p.accent);
+    root.style.setProperty("--theme-accent-rgb", p.accentRgb);
+    root.style.setProperty("--theme-cyan", p.cyan);
+    root.style.setProperty("--theme-green", p.green);
+    root.style.setProperty("--theme-magenta", p.magenta);
+    root.style.setProperty("--theme-orange", p.orange);
+  }, [theme, themeConfig]);
 
   // Global key listener for Command Palette, Space toggle, and Hyprland workspace shortcuts 1-4
   useEffect(() => {

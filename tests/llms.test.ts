@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateLlmsTxt, generateLlmsFullTxt } from "@/lib/llms";
+import { generateLlmsTxt, generateLlmsFullTxt, computeContentHash } from "@/lib/llms";
 import { ARTICLES } from "@/data/articles";
 import { PROJECTS } from "@/data/projects";
 
@@ -51,5 +51,27 @@ describe("LLM Standards (llms.txt and llms-full.txt)", () => {
     const txt = generateLlmsTxt(ARTICLES.slice(0, 1), PROJECTS.slice(0, 1), customUrl);
     expect(txt).toContain("https://example.com/subpath/articles/");
     expect(txt).not.toContain("https://example.com/subpath//articles/");
+  });
+
+  it("computes deterministic SHA-256 content hashes", () => {
+    const hash1 = computeContentHash("sample content");
+    const hash2 = computeContentHash("sample content");
+    const hash3 = computeContentHash("different content");
+    expect(hash1).toBe(hash2);
+    expect(hash1).not.toBe(hash3);
+    expect(hash1).toHaveLength(8);
+  });
+
+  it("handles projects with relative or missing GitHub URLs and no stars", () => {
+    const mockProject = {
+      ...PROJECTS[0],
+      githubUrl: "/projects/sample",
+      stars: undefined,
+    };
+    const txt = generateLlmsTxt(ARTICLES.slice(0, 1), [mockProject], "https://michael-svendsen.dev");
+    expect(txt).toContain("https://michael-svendsen.dev/projects/");
+
+    const full = generateLlmsFullTxt(ARTICLES.slice(0, 1), [mockProject], "https://michael-svendsen.dev");
+    expect(full).toContain("Stars/Scale**: OSS");
   });
 });

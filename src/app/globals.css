@@ -1,28 +1,60 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #07080c;
+  --foreground: #ededed;
+  --theme-bg: #090a10;
+  --theme-card: #12141e;
+  --theme-border: rgba(122, 162, 247, 0.18);
+  --theme-text: #e0e2ec;
+  --theme-muted: #787c99;
+  --theme-accent: #7aa2f7;
+  --theme-accent-rgb: 122, 162, 247;
+  --theme-cyan: #7dcfff;
+  --theme-green: #73daca;
+  --theme-magenta: #bb9af7;
+  --theme-orange: #ff9e64;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+[data-theme="tokyonight"] {
+  --theme-bg: #090a10;
+  --theme-card: #12141e;
+  --theme-border: rgba(122, 162, 247, 0.18);
+  --theme-accent: #7aa2f7;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+[data-theme="flexoki"] {
+  --theme-bg: #100f0f;
+  --theme-card: #1c1b1a;
+  --theme-border: rgba(218, 112, 44, 0.2);
+  --theme-accent: #da702c;
+}
+
+[data-theme="oxocarbon"] {
+  --theme-bg: #0b0b0e;
+  --theme-card: #16161b;
+  --theme-border: rgba(61, 219, 217, 0.22);
+  --theme-accent: #3ddbd9;
+}
+
+[data-theme="catppuccin"] {
+  --theme-bg: #0d0e15;
+  --theme-card: #181825;
+  --theme-border: rgba(203, 166, 247, 0.2);
+  --theme-accent: #89b4fa;
+}
+
+[data-theme="monochrome"] {
+  --theme-bg: #050505;
+  --theme-card: #0d0d0d;
+  --theme-border: rgba(74, 222, 128, 0.22);
+  --theme-accent: #4ade80;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-mono), monospace;
 }
 
 /* Article Prose Typography */

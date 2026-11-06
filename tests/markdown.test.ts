@@ -50,6 +50,7 @@ describe("Markdown Rendering Engine", () => {
     expect(html).toContain("<code");
     expect(html).toContain("language-python");
     expect(html).toContain("copy-code-btn");
+    expect(html).toContain('data-code-copy="true"');
   });
 
   it("should handle code blocks without explicit language", () => {

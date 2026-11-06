@@ -17,7 +17,24 @@ export function InteractiveShell() {
 
   const [inputVal, setInputVal] = useState("");
   const [historyIndex, setHistoryIndex] = useState<number | null>(null);
-  const [commandHistory, setCommandHistory] = useState<string[]>([]);
+  const [commandHistory, setCommandHistory] = useState<string[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const saved = sessionStorage.getItem("ms_shell_history");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem("ms_shell_history", JSON.stringify(commandHistory));
+    } catch {
+      // ignore storage quota / sandbox issues
+    }
+  }, [commandHistory]);
+
   const [history, setHistory] = useState<HistoryEntry[]>([
     {
       command: "welcome",
@@ -153,7 +170,11 @@ export function InteractiveShell() {
       </div>
 
       {/* Terminal Output Stream */}
-      <div className="space-y-3 max-h-72 sm:max-h-80 overflow-y-auto pr-1">
+      <div
+        role="log"
+        aria-live="polite"
+        className="space-y-3 max-h-72 sm:max-h-80 overflow-y-auto pr-1"
+      >
         {history.map((h, i) => (
           <div key={i} className="space-y-1">
             <div className="flex items-center gap-2 text-white/40">

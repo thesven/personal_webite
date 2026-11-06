@@ -96,6 +96,10 @@ export function ScreensaverCanvas({
     beamX: 0,
     spotlight1: { x: 150, y: 120, vx: 2.2, vy: 1.6, radius: 140 },
     spotlight2: { x: 450, y: 180, vx: -1.8, vy: 2.1, radius: 150 },
+    width: 900,
+    height: 300,
+    isTabVisible: true,
+    prefersReducedMotion: false,
     burnParticles: [] as BurnParticle[],
   });
 
@@ -194,10 +198,12 @@ export function ScreensaverCanvas({
     stateRef.current.lastFpsUpdate = performance.now();
 
     const setupDimensionsAndGrid = () => {
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
       const rect = canvas.getBoundingClientRect();
       const w = Math.max(rect.width, 320);
       const h = Math.max(rect.height, 240);
+      stateRef.current.width = w;
+      stateRef.current.height = h;
 
       canvas.width = w * dpr;
       canvas.height = h * dpr;
@@ -262,8 +268,9 @@ export function ScreensaverCanvas({
 
     // Animation Loop
     const render = (time: number) => {
-      animId = requestAnimationFrame(render);
       const s = stateRef.current;
+      if (!s.isTabVisible) return;
+      animId = requestAnimationFrame(render);
       s.animFrame++;
       s.frameCount++;
 
@@ -273,9 +280,8 @@ export function ScreensaverCanvas({
         s.lastFpsUpdate = time;
       }
 
-      const rect = canvas.getBoundingClientRect();
-      const w = rect.width;
-      const h = rect.height;
+      const w = s.width;
+      const h = s.height;
 
       ctx.clearRect(0, 0, w, h);
 
@@ -484,13 +490,46 @@ export function ScreensaverCanvas({
         }
       }
       ctx.globalAlpha = 1.0;
+
+      if (!isReducedMotion && !document.hidden) {
+        animId = requestAnimationFrame(render);
+      }
     };
 
-    animId = requestAnimationFrame(render);
+    const prefersReducedMotionQuery = typeof window !== "undefined" && window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+    let isReducedMotion = prefersReducedMotionQuery?.matches ?? false;
+
+    const handleReducedMotionChange = (e: MediaQueryListEvent) => {
+      isReducedMotion = e.matches;
+      if (isReducedMotion) {
+        cancelAnimationFrame(animId);
+        render(0);
+      } else if (!document.hidden) {
+        animId = requestAnimationFrame(render);
+      }
+    };
+    prefersReducedMotionQuery?.addEventListener("change", handleReducedMotionChange);
+
+    const handleVisibilityChange = () => {
+      if (document.hidden || isReducedMotion) {
+        cancelAnimationFrame(animId);
+      } else {
+        animId = requestAnimationFrame(render);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    if (isReducedMotion) {
+      render(0);
+    } else {
+      animId = requestAnimationFrame(render);
+    }
 
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener("resize", setupDimensionsAndGrid);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      prefersReducedMotionQuery?.removeEventListener("change", handleReducedMotionChange);
     };
   }, [themeConfig.palette, themeConfig.palette.accentRgb, resetGridForEffect, nextEffect]);
 

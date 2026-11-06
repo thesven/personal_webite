@@ -9,11 +9,13 @@ import { getPersonSchema, getWebsiteSchema } from "@/lib/seo";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const viewport: Viewport = {
@@ -62,6 +64,7 @@ export const metadata: Metadata = {
     canonical: "/",
     types: {
       "application/rss+xml": "/feed.xml",
+      "application/feed+json": "/feed.json",
     },
   },
   openGraph: {
@@ -120,6 +123,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("ms_theme");if(t){document.documentElement.setAttribute("data-theme",t);}}catch(e){}})();`,
+          }}
+        />
         <JsonLd schema={personSchema} />
         <JsonLd schema={websiteSchema} />
       </head>

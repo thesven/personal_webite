@@ -12,16 +12,22 @@ export function ShellLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-cyan-400 focus:text-black focus:font-mono focus:text-xs focus:font-bold focus:rounded focus:shadow-lg focus:outline-none"
+      >
+        Skip to main content
+      </a>
       <Waybar />
       <CommandPalette />
 
       {isRootScreensaver ? (
-        <main className="flex-1 w-full relative overflow-hidden">
+        <main id="main-content" className="flex-1 w-full relative overflow-hidden">
           {children}
         </main>
       ) : (
         <>
-          <main className="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-8">
+          <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-8">
             {children}
           </main>
           <footer className="border-t border-white/10 py-6 text-center text-xs text-white/50 font-mono space-y-2">
@@ -39,6 +45,10 @@ export function ShellLayout({ children }: { children: React.ReactNode }) {
               <span>•</span>
               <Link href="/feed.xml" className="hover:text-cyan-300 transition underline underline-offset-2">
                 RSS Feed
+              </Link>
+              <span>•</span>
+              <Link href="/feed.json" className="hover:text-cyan-300 transition underline underline-offset-2">
+                JSON Feed
               </Link>
               <span>•</span>
               <a
