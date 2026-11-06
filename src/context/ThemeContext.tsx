@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useTransition } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { playSwitchClick } from "@/lib/audio";
+import { resolveNavigationKey } from "@/lib/navigation";
 
 export type ThemeId = "tokyonight" | "flexoki" | "oxocarbon" | "catppuccin" | "monochrome";
 
@@ -191,56 +192,23 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const themeConfig = THEMES[theme] || THEMES.tokyonight;
 
-  // Global key listener for Command Palette, Space toggle, and Escape
+  // Global key listener for Command Palette, Space toggle, and Hyprland workspace shortcuts 1-4
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // ⌘K or Ctrl+K -> Command Palette
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+      const action = resolveNavigationKey(e, { pathname: pathname || "/", commandPaletteOpen });
+      if (!action) return;
+
+      if (action.type === "TOGGLE_COMMAND_PALETTE") {
         e.preventDefault();
         setCommandPaletteOpen((prev) => !prev);
         playSwitchClick("down", soundEnabled);
-        return;
-      }
-
-      // Escape -> Close Command Palette or wake from root screensaver
-      if (e.key === "Escape") {
-        if (commandPaletteOpen) {
-          setCommandPaletteOpen(false);
-          return;
-        }
-        if (pathname === "/") {
-          playSwitchClick("space", soundEnabled);
-          router.push("/sys");
-          return;
-        }
-      }
-
-      // Space or Enter -> Navigate between / and /sys when not typing
-      if (e.code === "Space" && !commandPaletteOpen) {
-        const target = e.target as HTMLElement;
-        if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
-          return;
-        }
+      } else if (action.type === "CLOSE_COMMAND_PALETTE") {
         e.preventDefault();
-        playSwitchClick("space", soundEnabled);
-        if (pathname === "/") {
-          router.push("/sys");
-        } else {
-          router.push("/");
-        }
-        return;
-      }
-
-      // Enter on root screensaver -> Go to desktop /sys
-      if (e.key === "Enter" && pathname === "/" && !commandPaletteOpen) {
-        const target = e.target as HTMLElement;
-        if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
-          return;
-        }
+        setCommandPaletteOpen(false);
+      } else if (action.type === "NAVIGATE") {
         e.preventDefault();
-        playSwitchClick("space", soundEnabled);
-        router.push("/sys");
-        return;
+        playSwitchClick(action.path === "/" ? "space" : "down", soundEnabled);
+        router.push(action.path);
       }
     };
 

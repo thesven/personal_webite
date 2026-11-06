@@ -171,6 +171,17 @@ export function Waybar() {
             </select>
           </div>
 
+          {/* RSS Feed */}
+          <a
+            href="/feed.xml"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-2 py-0.5 rounded border transition font-mono bg-black/50 border-white/10 text-white/50 hover:text-white hover:border-white/20 text-xs"
+            title="RSS 2.0 Publication Feed"
+          >
+            RSS
+          </a>
+
           {/* CRT Filter Toggle */}
           <button
             onClick={toggleCrt}

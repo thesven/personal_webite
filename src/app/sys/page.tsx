@@ -80,7 +80,7 @@ export default function SystemDashboardPage() {
                 >
                   <div className="flex items-center justify-between text-[10px] text-white/40 mb-1">
                     <span style={{ color: themeConfig.palette.cyan }}>
-                      0{idx + 1} // {art.category}
+                      0{idx + 1} {"//"} {art.category}
                     </span>
                     <span>{art.readTime}</span>
                   </div>

@@ -13,30 +13,17 @@ interface CommandItem {
   action: () => void;
 }
 
-export function CommandPalette() {
+function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
   const router = useRouter();
-  const {
-    commandPaletteOpen,
-    setCommandPaletteOpen,
-    setTheme,
-    toggleCrt,
-    toggleSound,
-    setScreensaverActive,
-    soundEnabled,
-    themeConfig,
-  } = useTheme();
+  const { setTheme, toggleCrt, toggleSound, soundEnabled, themeConfig } = useTheme();
 
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    if (commandPaletteOpen) {
-      setQuery("");
-      setSelectedIndex(0);
-      setTimeout(() => inputRef.current?.focus(), 50);
-    }
-  }, [commandPaletteOpen]);
+    inputRef.current?.focus();
+  }, []);
 
   const commands: CommandItem[] = [
     {
@@ -100,7 +87,7 @@ export function CommandPalette() {
 
   const executeCommand = (cmd: CommandItem) => {
     playSwitchClick("down", soundEnabled);
-    setCommandPaletteOpen(false);
+    onClose();
     cmd.action();
   };
 
@@ -117,15 +104,16 @@ export function CommandPalette() {
       e.preventDefault();
       const target = filteredCommands[selectedIndex];
       if (target) executeCommand(target);
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      onClose();
     }
   };
-
-  if (!commandPaletteOpen) return null;
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-black/70 backdrop-blur-sm"
-      onClick={() => setCommandPaletteOpen(false)}
+      onClick={onClose}
     >
       <div
         className="w-full max-w-xl rounded-lg border shadow-2xl overflow-hidden font-mono text-xs transition-all"
@@ -203,4 +191,12 @@ export function CommandPalette() {
       </div>
     </div>
   );
+}
+
+export function CommandPalette() {
+  const { commandPaletteOpen, setCommandPaletteOpen } = useTheme();
+
+  if (!commandPaletteOpen) return null;
+
+  return <CommandPaletteDialog onClose={() => setCommandPaletteOpen(false)} />;
 }

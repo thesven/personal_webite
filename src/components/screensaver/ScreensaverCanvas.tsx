@@ -3,6 +3,16 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useTheme } from "@/context/ThemeContext";
 import { playSwitchClick } from "@/lib/audio";
+import {
+  EffectType,
+  BurnParticle,
+  computeBurnParticle,
+  createInitialParticles,
+  computeSpotlightVisibility,
+  computeVhsGlitchOffsets,
+  computeBinaryPathToken,
+  computeWaveColor,
+} from "@/lib/screensaverEffects";
 
 const ASCII_MICHAEL = [
   "   ▄▄▄▄███▄▄▄▄    ▄█   ▄████████    ▄█    █▄       ▄████████    ▄████████  ▄█    ",
@@ -27,16 +37,6 @@ const ASCII_SVENDSEN = [
   " ▄████████▀   ▀██████▀    ██████████  ▀█   █▀  ████████▀   ▄████████▀    ██████████  ▀█   █▀ ",
   "                                                                                             ",
 ];
-
-export type EffectType =
-  | "decrypt"
-  | "matrix"
-  | "beams"
-  | "burn"
-  | "waves"
-  | "spotlights"
-  | "vhstape"
-  | "binarypath";
 
 export const EFFECTS_LIST: { id: EffectType; label: string }[] = [
   { id: "decrypt", label: "Cryptographic Decrypt" },
@@ -78,6 +78,7 @@ export function ScreensaverCanvas({
   const [lifecycleState, setLifecycleState] = useState<"INTRO" | "SETTLED" | "GLINT" | "OUTRO">("INTRO");
   const [fps, setFps] = useState(120);
 
+  // Keep stateRef without calling performance.now() during render to satisfy React 19 purity rules
   const stateRef = useRef({
     effect: "decrypt" as EffectType,
     autoCycle: true,
@@ -85,21 +86,76 @@ export function ScreensaverCanvas({
     animFrame: 0,
     settledTimer: 0,
     glintProgress: 0,
-    lastTime: performance.now(),
+    lastTime: 0,
     frameCount: 0,
-    lastFpsUpdate: performance.now(),
+    lastFpsUpdate: 0,
     grid: [] as Cell[][],
     gridRows: 0,
     gridCols: 0,
     matrixDrops: [] as { col: number; row: number; speed: number; len: number }[],
     beamX: 0,
-    spotlight1: { x: 0, y: 0, vx: 2, vy: 1.5 },
-    spotlight2: { x: 0, y: 0, vx: -1.8, vy: 2.2 },
-    burnParticles: [] as { x: number; y: number; vx: number; vy: number; life: number; color: string }[],
+    spotlight1: { x: 150, y: 120, vx: 2.2, vy: 1.6, radius: 140 },
+    spotlight2: { x: 450, y: 180, vx: -1.8, vy: 2.1, radius: 150 },
+    burnParticles: [] as BurnParticle[],
   });
 
+  // Reset grid state for a newly selected effect (declared before callbacks to satisfy lint)
+  const resetGridForEffect = useCallback(
+    (eff: EffectType) => {
+      const s = stateRef.current;
+      s.lifecycle = "INTRO";
+      setLifecycleState("INTRO");
+      s.animFrame = 0;
+      s.settledTimer = 0;
+      s.glintProgress = 0;
+      s.beamX = 0;
+
+      // Re-seed particles if burn
+      if (eff === "burn") {
+        s.burnParticles = createInitialParticles(45, 900, 300);
+      }
+
+      for (let r = 0; r < s.gridRows; r++) {
+        for (let c = 0; c < s.gridCols; c++) {
+          const cell = s.grid[r]?.[c];
+          if (!cell) continue;
+          cell.revealed = false;
+          cell.timer = Math.random() * 40;
+          cell.phase = Math.random() * Math.PI * 2;
+          if (eff === "decrypt") {
+            cell.char = cell.targetChar !== " " ? String.fromCharCode(33 + Math.floor(Math.random() * 90)) : " ";
+            cell.color = themeConfig.palette.muted;
+            cell.alpha = 0.5;
+          } else if (eff === "matrix") {
+            cell.char = " ";
+            cell.color = themeConfig.palette.green;
+            cell.alpha = 0;
+          } else if (eff === "burn") {
+            cell.char = cell.targetChar;
+            cell.color = "#ff9800";
+            cell.alpha = 0.2;
+          } else {
+            cell.char = cell.targetChar;
+            cell.color = themeConfig.palette.accent;
+            cell.alpha = 0.1;
+          }
+        }
+      }
+    },
+    [themeConfig.palette]
+  );
+
   const nextEffect = useCallback(() => {
-    const list: EffectType[] = ["decrypt", "matrix", "beams", "burn", "waves", "spotlights", "vhstape", "binarypath"];
+    const list: EffectType[] = [
+      "decrypt",
+      "matrix",
+      "beams",
+      "burn",
+      "waves",
+      "spotlights",
+      "vhstape",
+      "binarypath",
+    ];
     const currIdx = list.indexOf(stateRef.current.effect);
     const nextIdx = (currIdx + 1) % list.length;
     const next = list[nextIdx];
@@ -107,56 +163,24 @@ export function ScreensaverCanvas({
     setCurrentEffect(next);
     resetGridForEffect(next);
     playSwitchClick("up", soundEnabled);
-  }, [soundEnabled]);
+  }, [soundEnabled, resetGridForEffect]);
 
-  const selectEffect = (eff: EffectType) => {
-    stateRef.current.effect = eff;
-    setCurrentEffect(eff);
-    resetGridForEffect(eff);
-    playSwitchClick("down", soundEnabled);
-  };
+  const selectEffect = useCallback(
+    (eff: EffectType) => {
+      stateRef.current.effect = eff;
+      setCurrentEffect(eff);
+      resetGridForEffect(eff);
+      playSwitchClick("down", soundEnabled);
+    },
+    [soundEnabled, resetGridForEffect]
+  );
 
-  const resetGridForEffect = (eff: EffectType) => {
-    const s = stateRef.current;
-    s.lifecycle = "INTRO";
-    setLifecycleState("INTRO");
-    s.animFrame = 0;
-    s.settledTimer = 0;
-    s.glintProgress = 0;
-    s.beamX = 0;
+  // Sync autoCycle toggle to ref
+  useEffect(() => {
+    stateRef.current.autoCycle = autoCycle;
+  }, [autoCycle]);
 
-    for (let r = 0; r < s.gridRows; r++) {
-      for (let c = 0; c < s.gridCols; c++) {
-        const cell = s.grid[r][c];
-        if (!cell) continue;
-        cell.revealed = false;
-        cell.timer = Math.random() * 40;
-        cell.phase = Math.random() * Math.PI * 2;
-        if (eff === "decrypt") {
-          cell.char = cell.targetChar !== " " ? String.fromCharCode(33 + Math.floor(Math.random() * 90)) : " ";
-          cell.color = themeConfig.palette.muted;
-          cell.alpha = 0.5;
-        } else if (eff === "matrix") {
-          cell.char = " ";
-          cell.color = themeConfig.palette.green;
-          cell.alpha = 0;
-        } else if (eff === "beams") {
-          cell.char = " ";
-          cell.color = themeConfig.palette.cyan;
-          cell.alpha = 0;
-        } else if (eff === "burn") {
-          cell.char = " ";
-          cell.color = themeConfig.palette.orange;
-          cell.alpha = 0;
-        } else {
-          cell.char = cell.targetChar;
-          cell.color = themeConfig.palette.accent;
-          cell.alpha = 1;
-        }
-      }
-    }
-  };
-
+  // Main Canvas & Graphics Animation Effect
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -165,37 +189,30 @@ export function ScreensaverCanvas({
 
     let animId: number;
 
+    // Initialize animation timestamps safely inside effect
+    stateRef.current.lastTime = performance.now();
+    stateRef.current.lastFpsUpdate = performance.now();
+
     const setupDimensionsAndGrid = () => {
       const dpr = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
-      const width = rect.width;
-      const height = rect.height;
+      const w = Math.max(rect.width, 320);
+      const h = Math.max(rect.height, 240);
 
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.resetTransform?.();
       ctx.scale(dpr, dpr);
 
-      // Determine single vs dual row
-      const isDual = width < 880;
-      let rawLines: string[] = [];
-      if (isDual) {
-        rawLines = [
-          ...ASCII_MICHAEL,
-          " ".repeat(ASCII_MICHAEL[0].length),
-          ...ASCII_SVENDSEN,
-        ];
-      } else {
-        const maxLen = Math.max(ASCII_MICHAEL.length, ASCII_SVENDSEN.length);
-        rawLines = [];
-        for (let i = 0; i < maxLen; i++) {
-          const l1 = i < ASCII_MICHAEL.length ? ASCII_MICHAEL[i] : " ".repeat(ASCII_MICHAEL[0].length);
-          const l2 = i < ASCII_SVENDSEN.length ? ASCII_SVENDSEN[i] : " ".repeat(ASCII_SVENDSEN[0].length);
-          rawLines.push(l1 + "    " + l2);
-        }
-      }
+      // Raw Delta Corps Priest 1 block font representation
+      const rawLines = [
+        ...ASCII_MICHAEL,
+        "                                                                                             ",
+        ...ASCII_SVENDSEN,
+      ];
 
       const rows = rawLines.length;
-      const cols = rawLines[0]?.length || 1;
+      const cols = Math.max(...rawLines.map((l) => l.length));
 
       stateRef.current.gridRows = rows;
       stateRef.current.gridCols = cols;
@@ -233,6 +250,9 @@ export function ScreensaverCanvas({
         });
       }
       stateRef.current.matrixDrops = drops;
+
+      // Burn initial particles
+      stateRef.current.burnParticles = createInitialParticles(50, w, h);
 
       resetGridForEffect(stateRef.current.effect);
     };
@@ -313,14 +333,9 @@ export function ScreensaverCanvas({
       ctx.fillStyle = radialGlow;
       ctx.fillRect(0, 0, w, h);
 
-      // 2. Render Text Cells
-      ctx.font = `bold ${Math.round(cellH * 0.9)}px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`;
-      ctx.textBaseline = "middle";
-      ctx.textAlign = "center";
-
       const eff = s.effect;
 
-      // Effect specific updates
+      // 2. Effect Specific State Updates
       if (eff === "beams") {
         s.beamX = (s.beamX + 1.2) % (cols + 15);
       } else if (eff === "matrix") {
@@ -330,16 +345,54 @@ export function ScreensaverCanvas({
             drop.row = -Math.floor(Math.random() * 5);
           }
         });
+      } else if (eff === "spotlights") {
+        // Bounce dual searchlight cones
+        s.spotlight1.x += s.spotlight1.vx;
+        s.spotlight1.y += s.spotlight1.vy;
+        if (s.spotlight1.x < 50 || s.spotlight1.x > w - 50) s.spotlight1.vx *= -1;
+        if (s.spotlight1.y < 40 || s.spotlight1.y > h - 40) s.spotlight1.vy *= -1;
+
+        s.spotlight2.x += s.spotlight2.vx;
+        s.spotlight2.y += s.spotlight2.vy;
+        if (s.spotlight2.x < 50 || s.spotlight2.x > w - 50) s.spotlight2.vx *= -1;
+        if (s.spotlight2.y < 40 || s.spotlight2.y > h - 40) s.spotlight2.vy *= -1;
+      } else if (eff === "burn") {
+        // Evolve burn particles
+        s.burnParticles = s.burnParticles
+          .map((p) => computeBurnParticle(p))
+          .filter((p) => p.life > 0);
+        if (s.burnParticles.length < 50) {
+          s.burnParticles.push(...createInitialParticles(15, w, h));
+        }
+
+        // Draw embers
+        s.burnParticles.forEach((p) => {
+          ctx.fillStyle = p.color || "#ff9800";
+          ctx.globalAlpha = p.life * 0.8;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, Math.max(1, 2.5 * p.life), 0, Math.PI * 2);
+          ctx.fill();
+        });
+        ctx.globalAlpha = 1.0;
       }
+
+      // 3. Render Text Cells
+      ctx.font = `bold ${Math.round(cellH * 0.9)}px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`;
+      ctx.textBaseline = "middle";
+      ctx.textAlign = "center";
 
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-          const cell = s.grid[r][c];
+          const cell = s.grid[r]?.[c];
           if (!cell || cell.targetChar === " ") continue;
 
           let charToDraw = cell.targetChar;
           let color = themeConfig.palette.accent;
           let alpha = 1;
+          let drawOffsetX = 0;
+
+          const posX = startX + c * cellW + cellW / 2;
+          const posY = startY + r * cellH + cellH / 2;
 
           if (s.lifecycle === "INTRO") {
             if (eff === "decrypt") {
@@ -392,20 +445,41 @@ export function ScreensaverCanvas({
 
           // Waves effect modulation
           if (eff === "waves") {
-            const wave = Math.sin(s.animFrame * 0.05 + c * 0.2 + r * 0.3);
-            if (wave > 0.5) {
-              color = themeConfig.palette.cyan;
-            } else if (wave < -0.5) {
+            color = computeWaveColor(s.animFrame, r, c, themeConfig.palette);
+          }
+
+          // Spotlights effect: only illuminate characters inside light fields
+          if (eff === "spotlights") {
+            const vis = computeSpotlightVisibility(posX, posY, s.spotlight1, s.spotlight2);
+            alpha = Math.max(0.06, vis);
+            if (vis > 0.6) {
+              color = "#ffffff";
+            }
+          }
+
+          // VHS tape effect: chromatic aberration and scanline jitter
+          if (eff === "vhstape") {
+            const glitch = computeVhsGlitchOffsets(s.animFrame, r);
+            drawOffsetX = glitch.scanlineJitter;
+            if (glitch.hasTrackingGlitch) {
               color = themeConfig.palette.magenta;
+            }
+          }
+
+          // Binary path effect: PCB circuit bit pulses
+          if (eff === "binarypath") {
+            const token = computeBinaryPathToken(s.animFrame, r, c);
+            if (token.isNode) {
+              charToDraw = token.char;
+              color = themeConfig.palette.cyan;
+              alpha = token.alpha;
             }
           }
 
           if (alpha > 0) {
             ctx.fillStyle = color;
             ctx.globalAlpha = alpha;
-            const posX = startX + c * cellW + cellW / 2;
-            const posY = startY + r * cellH + cellH / 2;
-            ctx.fillText(charToDraw, posX, posY);
+            ctx.fillText(charToDraw, posX + drawOffsetX, posY);
           }
         }
       }
@@ -418,17 +492,20 @@ export function ScreensaverCanvas({
       cancelAnimationFrame(animId);
       window.removeEventListener("resize", setupDimensionsAndGrid);
     };
-  }, [themeConfig, nextEffect]);
+  }, [themeConfig.palette, themeConfig.palette.accentRgb, resetGridForEffect, nextEffect]);
 
+  // Fullscreen keyboard shortcut: N or Tab to cycle effect
   useEffect(() => {
-    if (fullscreen) {
-      const prevOverflow = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = prevOverflow;
-      };
-    }
-  }, [fullscreen]);
+    if (!fullscreen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === "n" || e.key === "Tab") {
+        e.preventDefault();
+        nextEffect();
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [fullscreen, nextEffect]);
 
   return (
     <div
@@ -453,7 +530,7 @@ export function ScreensaverCanvas({
 
       <canvas ref={canvasRef} className="w-full h-full block relative z-10" />
 
-      {/* Interactive Wake Instruction Badge (Prototype Landing Page Style) */}
+      {/* Interactive Wake Instruction Badge */}
       {fullscreen && onExitFullscreen && (
         <div className="absolute bottom-14 sm:bottom-16 left-0 right-0 z-30 flex flex-col items-center gap-3 font-mono text-center pointer-events-none">
           <div className="flex items-center gap-2.5 text-xs tracking-widest text-white/75 bg-black/60 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10 shadow-lg">
@@ -481,18 +558,18 @@ export function ScreensaverCanvas({
                 e.stopPropagation();
                 nextEffect();
               }}
-              title="Switch Animation Effect (N)"
+              title="Switch Animation Effect (Press N or Tab)"
               className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-full bg-black/60 hover:bg-black/80 border border-white/10 hover:border-white/30 text-xs text-white/70 hover:text-white transition cursor-pointer backdrop-blur-md"
             >
               <span className="text-white/40">Effect:</span>
               <span className="text-white font-semibold">{currentEffect}</span>
-              <span className="text-white/40 ml-0.5">⇥</span>
+              <span className="text-white/40 ml-0.5">(N)</span>
             </button>
           </div>
         </div>
       )}
 
-      {/* Fullscreen Bottom OS Status Badges (Prototype Parity) */}
+      {/* Fullscreen Bottom OS Status Badges */}
       {fullscreen && (
         <div className="absolute bottom-3 left-6 right-6 z-20 hidden sm:flex items-center justify-between text-[11px] font-mono text-white/35 pointer-events-none">
           <div className="flex items-center gap-2">
@@ -575,22 +652,6 @@ export function ScreensaverCanvas({
             >
               ⟳ {autoCycle ? "auto" : "manual"}
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* Bottom Telemetry Bar (Only in inline desktop hero card) */}
-      {!fullscreen && (
-        <div className="absolute bottom-2 left-4 right-4 z-20 flex items-center justify-between text-[11px] text-white/40 pointer-events-none">
-          <div className="flex items-center gap-2">
-            <span>FIGlet: Delta Corps Priest 1</span>
-            <span>•</span>
-            <span>TTE Procedural Engine</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-emerald-400/80">{fps} FPS</span>
-            <span>•</span>
-            <span>Canvas 2D Batching</span>
           </div>
         </div>
       )}

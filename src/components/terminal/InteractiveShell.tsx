@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "@/context/ThemeContext";
 import { playSwitchClick } from "@/lib/audio";
+import { processShellCommand, getShellCompletions } from "@/lib/shellCommands";
 
 interface HistoryEntry {
   command: string;
@@ -12,26 +13,84 @@ interface HistoryEntry {
 
 export function InteractiveShell() {
   const router = useRouter();
-  const { themeConfig, setScreensaverActive, soundEnabled } = useTheme();
+  const { themeConfig, setTheme, soundEnabled } = useTheme();
 
   const [inputVal, setInputVal] = useState("");
+  const [historyIndex, setHistoryIndex] = useState<number | null>(null);
+  const [commandHistory, setCommandHistory] = useState<string[]>([]);
   const [history, setHistory] = useState<HistoryEntry[]>([
     {
       command: "welcome",
       output: (
         <div className="text-white/60 space-y-1">
-          <div>Michael Svendsen Systems Terminal v2.4</div>
-          <div>Type <span className="text-cyan-300 font-bold">help</span> to list commands, or navigate workspaces directly.</div>
+          <div>Michael Svendsen Systems Terminal v2.4 (x86_64-linux)</div>
+          <div>
+            Type <span className="text-cyan-300 font-bold">help</span> to list utilities,{" "}
+            <span className="text-emerald-400 font-bold">theme &lt;name&gt;</span> to customize, or navigate workspaces directly.
+          </div>
         </div>
       ),
     },
   ]);
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [history]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Arrow Up: Cycle backwards through command history
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (commandHistory.length === 0) return;
+      const nextIdx = historyIndex === null ? commandHistory.length - 1 : Math.max(0, historyIndex - 1);
+      setHistoryIndex(nextIdx);
+      setInputVal(commandHistory[nextIdx]);
+      return;
+    }
+
+    // Arrow Down: Cycle forward through command history
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (historyIndex === null) return;
+      const nextIdx = historyIndex + 1;
+      if (nextIdx >= commandHistory.length) {
+        setHistoryIndex(null);
+        setInputVal("");
+      } else {
+        setHistoryIndex(nextIdx);
+        setInputVal(commandHistory[nextIdx]);
+      }
+      return;
+    }
+
+    // Tab: Autocomplete command name
+    if (e.key === "Tab") {
+      e.preventDefault();
+      const completions = getShellCompletions(inputVal);
+      if (completions.length === 1) {
+        setInputVal(completions[0] + " ");
+        playSwitchClick("up", soundEnabled);
+      } else if (completions.length > 1) {
+        setHistory((prev) => [
+          ...prev,
+          {
+            command: inputVal,
+            output: (
+              <div className="text-cyan-300 flex gap-3 text-[11px]">
+                {completions.map((c) => (
+                  <span key={c}>{c}</span>
+                ))}
+              </div>
+            ),
+          },
+        ]);
+        playSwitchClick("down", soundEnabled);
+      }
+    }
+  };
 
   const handleCommand = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,99 +98,36 @@ export function InteractiveShell() {
     if (!raw) return;
 
     playSwitchClick("down", soundEnabled);
-    const cmd = raw.toLowerCase();
     setInputVal("");
+    setHistoryIndex(null);
+    setCommandHistory((prev) => [...prev, raw]);
 
-    let output: React.ReactNode = null;
+    const result = processShellCommand(raw);
 
-    switch (cmd) {
-      case "help":
-        output = (
-          <div className="space-y-1 text-white/70">
-            <div>Available shell utilities:</div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 pt-1 text-white/90">
-              <div><span className="text-cyan-300">whoami</span> — Identity</div>
-              <div><span className="text-cyan-300">skills</span> — Tech stack</div>
-              <div><span className="text-cyan-300">certs</span> — Credentials</div>
-              <div><span className="text-cyan-300">articles</span> — Publications</div>
-              <div><span className="text-cyan-300">projects</span> — Systems portfolio</div>
-              <div><span className="text-cyan-300">about</span> — Career journal</div>
-              <div><span className="text-cyan-300">screensaver</span> — Graphics engine</div>
-              <div><span className="text-cyan-300">clear</span> — Clear output</div>
-            </div>
-          </div>
-        );
-        break;
-      case "whoami":
-        output = (
-          <div className="text-white/80 space-y-1">
-            <div className="font-bold text-white">Michael Svendsen (Aurora, Ontario, Canada)</div>
-            <div className="text-cyan-300">Senior Backend & AI Platform Engineer @ Reactiv</div>
-            <div className="text-white/60">
-              Architecting production analytics, personalization, and data infrastructure across AWS and Snowflake with dbt. Creator of LiteMCP, SPYPOINT MCP, GGUF-n-Go, and open-source models on Hugging Face.
-            </div>
-          </div>
-        );
-        break;
-      case "skills":
-      case "stack":
-        output = (
-          <div className="text-white/80 space-y-1">
-            <div><span className="text-cyan-300">Languages & Data:</span> Python, SQL, TypeScript, Bash, Go</div>
-            <div><span className="text-cyan-300">Data Platform:</span> Snowflake, dbt, AWS (Lambda, Step Functions, Glue, Redshift Serverless)</div>
-            <div><span className="text-cyan-300">AI & Agents:</span> Amazon Bedrock AgentCore, Model Context Protocol (MCP), Deep Learning, LLM Fine-Tuning</div>
-          </div>
-        );
-        break;
-      case "certs":
-      case "certifications":
-        output = (
-          <div className="text-white/80 space-y-1">
-            <div>• <span className="text-cyan-300">Snowflake Northstar</span> — Data Ingestion, Transformation, and Delivery (Issued Apr 2025)</div>
-            <div>• <span className="text-amber-300">Edinburgh Whisky Academy</span> — Certificate in Scotch Whisky</div>
-            <div>• <span className="text-emerald-400">Honors:</span> FWA Site of the Day (Lexus IS with Jam3) & ADCC Bronze</div>
-          </div>
-        );
-        break;
-      case "articles":
-      case "docs":
-        output = <div>Navigating to [2:docs] Publications...</div>;
-        setTimeout(() => router.push("/articles"), 400);
-        break;
-      case "projects":
-      case "work":
-        output = <div>Navigating to [3:work] Projects...</div>;
-        setTimeout(() => router.push("/projects"), 400);
-        break;
-      case "about":
-      case "user":
-        output = <div>Navigating to [4:user] Biography & Career...</div>;
-        setTimeout(() => router.push("/about"), 400);
-        break;
-      case "screensaver":
-      case "tte":
-        output = <div>Activating Delta Corps Priest 1 Screensaver...</div>;
-        setTimeout(() => router.push("/"), 300);
-        break;
-      case "uname":
-      case "uname -a":
-        output = <div>Linux workstation 6.12.1-zen #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux</div>;
-        break;
-      case "uptime":
-        output = <div>14:35:12 up 42 days, 3:18, 1 user, load average: 0.12, 0.08, 0.05</div>;
-        break;
-      case "clear":
-        setHistory([]);
-        return;
-      default:
-        output = (
-          <div className="text-red-400">
-            command not found: {raw}. Type <span className="text-white underline">help</span> for valid commands.
-          </div>
-        );
+    if (result.type === "CLEAR") {
+      setHistory([]);
+      return;
     }
 
-    setHistory((prev) => [...prev, { command: raw, output }]);
+    let outputNode: React.ReactNode = null;
+
+    if (result.type === "NAVIGATE") {
+      outputNode = <div className="text-emerald-400">{result.message}</div>;
+      setTimeout(() => router.push(result.path), 350);
+    } else if (result.type === "THEME_CHANGE") {
+      setTheme(result.themeId);
+      outputNode = <div className="text-emerald-400">{result.text}</div>;
+    } else if (result.type === "ERROR") {
+      outputNode = <div className="text-red-400">{result.text}</div>;
+    } else {
+      outputNode = (
+        <pre className="text-white/80 whitespace-pre-wrap font-mono text-xs leading-relaxed">
+          {result.text}
+        </pre>
+      );
+    }
+
+    setHistory((prev) => [...prev, { command: raw, output: outputNode }]);
   };
 
   return (
@@ -141,40 +137,51 @@ export function InteractiveShell() {
         backgroundColor: themeConfig.palette.card,
         borderColor: themeConfig.palette.border,
       }}
+      onClick={() => inputRef.current?.focus()}
     >
       {/* Shell Titlebar */}
-      <div className="flex items-center justify-between pb-2 mb-3 border-b border-white/10 text-white/40">
+      <div className="flex items-center justify-between pb-2 mb-3 border-b border-white/10 text-white/50 text-[11px]">
         <div className="flex items-center gap-2">
-          <span className="text-white/70 font-bold">&gt;_ TUI Shell Prompt</span>
+          <span className="flex gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-red-500/80 inline-block" />
+            <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80 inline-block" />
+            <span className="w-2.5 h-2.5 rounded-full bg-green-500/80 inline-block" />
+          </span>
+          <span className="text-white/70 font-semibold ml-1">sh // interactive workspace terminal</span>
         </div>
-        <span className="text-[10px]">zsh 5.9</span>
+        <span className="text-white/30 hidden sm:inline">bash (Tab: complete, ↑/↓: history)</span>
       </div>
 
-      {/* Terminal History */}
-      <div className="space-y-3 max-h-52 overflow-y-auto pr-1">
-        {history.map((entry, idx) => (
-          <div key={idx} className="space-y-1">
-            <div className="flex items-center gap-2 text-white/50">
-              <span style={{ color: themeConfig.palette.accent }}>svendsen@workstation:~$</span>
-              <span className="text-white font-medium">{entry.command}</span>
+      {/* Terminal Output Stream */}
+      <div className="space-y-3 max-h-72 sm:max-h-80 overflow-y-auto pr-1">
+        {history.map((h, i) => (
+          <div key={i} className="space-y-1">
+            <div className="flex items-center gap-2 text-white/40">
+              <span style={{ color: themeConfig.palette.accent }} className="font-bold">
+                svendsen@workstation:~$
+              </span>
+              <span className="text-white font-medium">{h.command}</span>
             </div>
-            <div className="pl-4">{entry.output}</div>
+            <div className="pl-2 border-l border-white/10">{h.output}</div>
           </div>
         ))}
         <div ref={bottomRef} />
       </div>
 
-      {/* Active Input Line */}
-      <form onSubmit={handleCommand} className="flex items-center gap-2 pt-3 mt-2 border-t border-white/10">
-        <span style={{ color: themeConfig.palette.accent }} className="font-bold select-none">
+      {/* Terminal Input Prompt */}
+      <form onSubmit={handleCommand} className="mt-3 flex items-center gap-2 border-t border-white/10 pt-2">
+        <span style={{ color: themeConfig.palette.accent }} className="font-bold whitespace-nowrap">
           svendsen@workstation:~$
         </span>
         <input
+          ref={inputRef}
           type="text"
           value={inputVal}
           onChange={(e) => setInputVal(e.target.value)}
-          placeholder="help..."
-          className="w-full bg-transparent text-white outline-none placeholder:text-white/20 font-mono text-xs"
+          onKeyDown={handleKeyDown}
+          placeholder="help, whoami, theme catppuccin, cat spypoint-mcp..."
+          className="flex-1 bg-transparent text-white outline-none placeholder:text-white/20 text-xs"
+          autoFocus
         />
       </form>
     </div>

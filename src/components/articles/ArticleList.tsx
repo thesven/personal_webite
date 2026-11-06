@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Article } from "@/data/articles";
+import { Article, getAllTags, getAllCategories, getTagCounts, filterArticles } from "@/data/articles";
 import { useTheme } from "@/context/ThemeContext";
 import { playSwitchClick } from "@/lib/audio";
 
@@ -15,25 +15,20 @@ export function ArticleList({
 }) {
   const { themeConfig, soundEnabled } = useTheme();
   const [selectedTag, setSelectedTag] = useState("ALL");
+  const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const allTags = ["ALL", "#systems", "#architecture", "#performance", "#ebpf"];
+  const allTags = ["ALL", ...getAllTags()];
+  const allCategories = ["ALL", ...getAllCategories()];
+  const tagCounts = getTagCounts(articles);
 
-  const filtered = articles.filter((a) => {
-    const matchesTag =
-      selectedTag === "ALL" ||
-      a.tags.some((t) => t.toLowerCase() === selectedTag.toLowerCase());
-    const matchesSearch =
-      a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      a.summary.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesTag && matchesSearch;
-  });
+  const filtered = filterArticles(articles, searchQuery, selectedTag, selectedCategory);
 
   return (
     <div className="space-y-4 font-mono text-xs">
-      {/* Telescope fzf search bar */}
+      {/* Telescope fzf search & category filter bar */}
       <div
-        className="rounded-lg border p-3.5 shadow-md transition-colors"
+        className="rounded-lg border p-3.5 shadow-md transition-colors space-y-3"
         style={{
           backgroundColor: themeConfig.palette.card,
           borderColor: themeConfig.palette.border,
@@ -49,49 +44,78 @@ export function ArticleList({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="fzf filter articles..."
+              placeholder="fzf filter by title, summary, tag, or technology..."
               className="w-full bg-transparent text-white outline-none placeholder:text-white/30 text-xs"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
                 className="text-white/40 hover:text-white"
+                title="Clear filter"
               >
                 ✕
               </button>
             )}
           </div>
 
-          {/* Tag Filter Pills */}
+          {/* Category Dropdown/Pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-            {allTags.map((t) => {
-              const isSelected = selectedTag === t;
+            <span className="text-white/40 text-[10px] uppercase tracking-wider">Category:</span>
+            {allCategories.map((cat) => {
+              const isSelected = selectedCategory === cat;
               return (
                 <button
-                  key={t}
+                  key={cat}
                   onClick={() => {
-                    setSelectedTag(t);
+                    setSelectedCategory(cat);
                     playSwitchClick("down", soundEnabled);
                   }}
-                  className={`px-2.5 py-1 rounded transition text-xs whitespace-nowrap ${
+                  className={`px-2 py-0.5 rounded transition text-[11px] whitespace-nowrap ${
                     isSelected
-                      ? "bg-white/15 text-white font-bold border border-white/20"
+                      ? "bg-white/20 text-white font-bold border border-white/30"
                       : "text-white/50 hover:text-white hover:bg-white/5 border border-transparent"
                   }`}
-                  style={
-                    isSelected
-                      ? {
-                          color: themeConfig.palette.accent,
-                          borderColor: themeConfig.palette.border,
-                        }
-                      : {}
-                  }
+                  style={isSelected ? { color: themeConfig.palette.cyan } : {}}
                 >
-                  {t}
+                  {cat}
                 </button>
               );
             })}
           </div>
+        </div>
+
+        {/* Dynamic Tag Filter Pills with Counts */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pt-1 border-t border-white/5">
+          <span className="text-white/40 text-[10px] uppercase tracking-wider whitespace-nowrap">Tags:</span>
+          {allTags.map((t) => {
+            const isSelected = selectedTag === t;
+            const count = t === "ALL" ? articles.length : tagCounts[t] || 0;
+            return (
+              <button
+                key={t}
+                onClick={() => {
+                  setSelectedTag(t);
+                  playSwitchClick("down", soundEnabled);
+                }}
+                className={`px-2 py-0.5 rounded transition text-[11px] whitespace-nowrap flex items-center gap-1 ${
+                  isSelected
+                    ? "bg-white/15 text-white font-bold border border-white/20"
+                    : "text-white/50 hover:text-white hover:bg-white/5 border border-transparent"
+                }`}
+                style={
+                  isSelected
+                    ? {
+                        color: themeConfig.palette.accent,
+                        borderColor: themeConfig.palette.border,
+                      }
+                    : {}
+                }
+              >
+                <span>{t}</span>
+                <span className="text-[10px] opacity-60">({count})</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -104,17 +128,18 @@ export function ArticleList({
         }}
       >
         <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/10 bg-black/40 text-white/40 text-[11px]">
-          <span>INDEX // FILENAME</span>
+          <span>INDEX // PUBLICATION BUFFER</span>
           <div className="flex items-center gap-6">
             <span>READ TIME</span>
             <span className="hidden sm:inline">DATE</span>
+            <span>ACTIONS</span>
           </div>
         </div>
 
         <div className="divide-y divide-white/5">
           {filtered.length === 0 ? (
             <div className="p-8 text-center text-white/40">
-              No matching publications found.
+              No matching publications found for current filter criteria.
             </div>
           ) : (
             filtered.map((article, idx) => {
@@ -122,15 +147,9 @@ export function ArticleList({
               return (
                 <div
                   key={article.slug}
-                  className="group flex items-start sm:items-center justify-between p-3.5 sm:px-4 hover:bg-white/5 transition cursor-pointer"
-                  onClick={() => {
-                    if (onSelectArticle) {
-                      onSelectArticle(article);
-                      playSwitchClick("down", soundEnabled);
-                    }
-                  }}
+                  className="group flex flex-col sm:flex-row sm:items-center justify-between p-3.5 sm:px-4 hover:bg-white/5 transition gap-3"
                 >
-                  <div className="space-y-1 pr-3">
+                  <div className="space-y-1 pr-3 flex-1">
                     <div className="flex items-center gap-2.5 flex-wrap">
                       <span className="text-white/30 font-bold">{lineNo}</span>
                       <Link
@@ -139,15 +158,19 @@ export function ArticleList({
                       >
                         {article.title}
                       </Link>
+                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-black/40 text-cyan-400 border border-white/10">
+                        {article.category}
+                      </span>
                     </div>
                     <p className="text-white/50 text-xs pl-7 line-clamp-2">
                       {article.summary}
                     </p>
-                    <div className="flex items-center gap-2 pl-7 pt-1">
+                    <div className="flex items-center gap-1.5 pl-7 pt-1 flex-wrap">
                       {article.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="text-[10px] px-1.5 py-0.2 rounded bg-white/5 text-white/40 border border-white/5"
+                          onClick={() => setSelectedTag(tag)}
+                          className="text-[10px] px-1.5 py-0.2 rounded bg-white/5 text-white/40 border border-white/5 hover:text-white hover:border-white/20 cursor-pointer transition"
                         >
                           {tag}
                         </span>
@@ -155,17 +178,31 @@ export function ArticleList({
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-6 text-[11px] text-white/40 whitespace-nowrap pt-1 sm:pt-0">
+                  <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-6 text-[11px] text-white/40 whitespace-nowrap pl-7 sm:pl-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-white/5">
                     <span style={{ color: themeConfig.palette.cyan }}>
                       {article.readTime}
                     </span>
                     <span className="hidden sm:inline">{article.date}</span>
-                    <Link
-                      href={`/articles/${article.slug}`}
-                      className="text-white/50 hover:text-white px-2 py-1 rounded bg-white/5 border border-white/10 hover:border-white/30 transition text-xs"
-                    >
-                      read &rarr;
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      {onSelectArticle && (
+                        <button
+                          onClick={() => {
+                            onSelectArticle(article);
+                            playSwitchClick("down", soundEnabled);
+                          }}
+                          className="text-white/70 hover:text-white px-2 py-1 rounded bg-black/40 border border-white/10 hover:border-white/30 transition text-[11px] cursor-pointer"
+                          title="Quick preview in floating Neovim buffer"
+                        >
+                          [nvim]
+                        </button>
+                      )}
+                      <Link
+                        href={`/articles/${article.slug}`}
+                        className="text-white hover:text-cyan-300 px-2 py-1 rounded bg-white/10 border border-white/20 hover:border-white/40 transition text-[11px]"
+                      >
+                        read &rarr;
+                      </Link>
+                    </div>
                   </div>
                 </div>
               );
