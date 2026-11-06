@@ -16,7 +16,7 @@ describe("RSS 2.0 Syndication Feed Generator", () => {
     expect(rss).toContain("<item>");
     ARTICLES.forEach((art) => {
       expect(rss).toContain(`<title><![CDATA[${art.title}]]></title>`);
-      expect(rss).toContain(`https://michael-svendsen.dev/articles/${art.slug}`);
+      expect(rss).toContain(`https://michael-svendsen.dev/articles/${art.slug}/`);
       expect(rss).toContain(`<category>${art.category}</category>`);
     });
   });

@@ -1,46 +1,55 @@
-"use client";
+import React from "react";
+import type { Metadata } from "next";
+import { ARTICLES } from "@/data/articles";
+import { ArticlesClient } from "@/components/articles/ArticlesClient";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { getBreadcrumbSchema, getArticlesListSchema } from "@/lib/seo";
 
-import React, { useState } from "react";
-import { ARTICLES, Article } from "@/data/articles";
-import { ArticleList } from "@/components/articles/ArticleList";
-import { NeovimArticleModal } from "@/components/articles/NeovimArticleModal";
-import { useTheme } from "@/context/ThemeContext";
+export const metadata: Metadata = {
+  title: "Technical Publications & Systems Research",
+  description:
+    "Technical essays and engineering research on Snowflake, dbt, AWS Bedrock AgentCore, Model Context Protocol (MCP) on Cloudflare Workers, GGUF quantization, and telemetry systems by Michael Svendsen.",
+  alternates: {
+    canonical: "/articles/",
+  },
+  openGraph: {
+    title: "Technical Publications & Systems Research | Michael Svendsen",
+    description:
+      "Deep dives into Snowflake, dbt, Bedrock AgentCore multi-agent systems, Model Context Protocol on Cloudflare Workers, and low-latency systems.",
+    url: "https://michael-svendsen.dev/articles/",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Technical Publications & Systems Research — Michael Svendsen",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Technical Publications & Systems Research | Michael Svendsen",
+    description:
+      "Deep dives into Snowflake, dbt, Bedrock AgentCore multi-agent systems, and MCP on Cloudflare Workers.",
+    creator: "@thesven",
+    images: ["/og-image.png"],
+  },
+};
 
 export default function ArticlesPage() {
-  const { themeConfig } = useTheme();
-  const [activeModalArticle, setActiveModalArticle] = useState<Article | null>(null);
+  const breadcrumbSchema = getBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Technical Publications", url: "/articles/" },
+  ]);
+
+  const articlesSchema = getArticlesListSchema(ARTICLES);
 
   return (
-    <div className="space-y-6 font-mono">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-white/10 gap-2">
-        <div>
-          <div className="flex items-center gap-2 text-xs">
-            <span style={{ color: themeConfig.palette.accent }} className="font-bold">
-              [2:docs]
-            </span>
-            <span className="text-white/40">publication://systems-engineering</span>
-          </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight mt-1">
-            Technical Publications & Systems Research
-          </h1>
-        </div>
-        <div className="text-xs text-white/40">
-          {ARTICLES.length} Essays • Zero Database • Static Fast Delivery
-        </div>
-      </div>
-
-      {/* Telescope Search & List */}
-      <ArticleList
-        articles={ARTICLES}
-        onSelectArticle={(article) => setActiveModalArticle(article)}
-      />
-
-      {/* Quick-view Neovim Modal */}
-      <NeovimArticleModal
-        article={activeModalArticle}
-        onClose={() => setActiveModalArticle(null)}
-      />
-    </div>
+    <>
+      <JsonLd schema={breadcrumbSchema} />
+      <JsonLd schema={articlesSchema} />
+      <ArticlesClient />
+    </>
   );
 }

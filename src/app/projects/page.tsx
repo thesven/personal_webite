@@ -1,33 +1,55 @@
-"use client";
-
 import React from "react";
-import { ProjectsView } from "@/components/projects/ProjectsView";
-import { useTheme } from "@/context/ThemeContext";
+import type { Metadata } from "next";
+import { PROJECTS } from "@/data/projects";
+import { ProjectsClient } from "@/components/projects/ProjectsClient";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { getBreadcrumbSchema, getProjectsListSchema } from "@/lib/seo";
+
+export const metadata: Metadata = {
+  title: "Systems & Infrastructure Portfolio",
+  description:
+    "Production platforms and open-source systems: Reactiv E-Commerce Data & AI Platform, LiteMCP (Model Context Protocol for Cloudflare Workers), GGUF-n-Go, spypoint_mcp, and telemetry SDKs by Michael Svendsen.",
+  alternates: {
+    canonical: "/projects/",
+  },
+  openGraph: {
+    title: "Systems & Infrastructure Portfolio | Michael Svendsen",
+    description:
+      "Production platforms, architecture diagrams, and open-source systems: Reactiv, LiteMCP, GGUF-n-Go, and spypoint_mcp.",
+    url: "https://michael-svendsen.dev/projects/",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Systems & Infrastructure Portfolio — Michael Svendsen",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Systems & Infrastructure Portfolio | Michael Svendsen",
+    description:
+      "Production platforms, architecture diagrams, and open-source systems: Reactiv, LiteMCP, GGUF-n-Go, and spypoint_mcp.",
+    creator: "@thesven",
+    images: ["/og-image.png"],
+  },
+};
 
 export default function ProjectsPage() {
-  const { themeConfig } = useTheme();
+  const breadcrumbSchema = getBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Systems Portfolio", url: "/projects/" },
+  ]);
+
+  const projectsSchema = getProjectsListSchema(PROJECTS);
 
   return (
-    <div className="space-y-6 font-mono">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-white/10 gap-2">
-        <div>
-          <div className="flex items-center gap-2 text-xs">
-            <span style={{ color: themeConfig.palette.accent }} className="font-bold">
-              [3:work]
-            </span>
-            <span className="text-white/40">workspace://systems-portfolio</span>
-          </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight mt-1">
-            Systems & Infrastructure Portfolio
-          </h1>
-        </div>
-        <div className="text-xs text-white/40">
-          Open Source • Kernel & Compositor Tooling
-        </div>
-      </div>
-
-      <ProjectsView />
-    </div>
+    <>
+      <JsonLd schema={breadcrumbSchema} />
+      <JsonLd schema={projectsSchema} />
+      <ProjectsClient />
+    </>
   );
 }

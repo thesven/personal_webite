@@ -121,3 +121,33 @@ npx serve out
 | `Space` | Toggle Fullscreen Screensaver |
 | `⌘K` / `Ctrl+K` | Open Walker Command Palette |
 | `Esc` | Close Active Modal / Dismiss Screensaver |
+
+---
+
+## 🔍 Search Engine, Generative & Answer Engine Optimization (SEO, GEO, AEO)
+
+This platform implements a state-of-the-art search and AI ingestion architecture:
+
+- **Traditional SEO**:
+  - Semantic HTML5 structure with canonical trailing-slash URLs (`https://michael-svendsen.dev/`).
+  - OpenGraph & Twitter Summary Card tags with a 1200x630 branded terminal preview banner (`/og-image.png`).
+  - Web App Manifest (`/site.webmanifest`) for PWA and search discoverability.
+  - XML Sitemap (`/sitemap.xml`) with dynamic article last-modified stamps, priority ratings, and change frequencies.
+  - Crawlable semantic SSR HTML on `/` allowing search spiders to index Michael's background, publications, and projects even without executing JavaScript/Canvas.
+
+- **Generative Engine Optimization (GEO)**:
+  - Definitional entity anchoring for Google AI Overviews, Perplexity.ai, and SearchGPT.
+  - Executive Abstract callout banners (`role="doc-abstract"`) on every technical essay summarizing direct architectural answers, metrics, and key takeaways.
+  - Machine-readable citation and reference metadata for automated academic and research attribution.
+
+- **Answer Engine & Agentic Optimization (AEO)**:
+  - **`llms.txt`**: Standardized markdown site index specifying primary workspaces, technical essays, and open-source systems.
+  - **`llms-full.txt`**: Uncompressed, full-corpus markdown documentation including verbatim content of all technical publications for direct LLM ingestion (Claude, ChatGPT, Perplexity, Cursor).
+  - Explicit AI agent crawler directives in `robots.txt` (`GPTBot`, `ChatGPT-User`, `OAI-SearchBot`, `PerplexityBot`, `ClaudeBot`, `anthropic-ai`, `Google-Extended`, `Applebot-Extended`, `cohere-ai`, `Meta-ExternalAgent`).
+  - Complete Schema.org JSON-LD structured data graph:
+    - `Person` (`#person`) & `WebSite` (`#website`)
+    - `BreadcrumbList` on every route
+    - `TechArticle` on all technical essays (with author, publisher, wordCount, keywords)
+    - `ItemList` with `SoftwareApplication` for open-source repositories
+    - `FAQPage` answering core background and platform queries
+

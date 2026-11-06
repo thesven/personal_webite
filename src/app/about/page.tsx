@@ -1,33 +1,54 @@
-"use client";
-
 import React from "react";
-import { AboutView } from "@/components/about/AboutView";
-import { useTheme } from "@/context/ThemeContext";
+import type { Metadata } from "next";
+import { AboutClient } from "@/components/about/AboutClient";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { getBreadcrumbSchema, getAboutFaqSchema } from "@/lib/seo";
+
+export const metadata: Metadata = {
+  title: "Biography, Career Journal & Security",
+  description:
+    "Career journal, technical leadership, verified credentials, and PGP security key for Michael Svendsen — Senior Backend & AI Platform Engineer.",
+  alternates: {
+    canonical: "/about/",
+  },
+  openGraph: {
+    title: "Biography, Career Journal & Security | Michael Svendsen",
+    description:
+      "Career timeline at Reactiv, Chronic Ink, Cannondale, verified credentials, skills, and PGP keycard for Michael Svendsen.",
+    url: "https://michael-svendsen.dev/about/",
+    type: "profile",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Biography, Career Journal & Security — Michael Svendsen",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Biography, Career Journal & Security | Michael Svendsen",
+    description:
+      "Career timeline at Reactiv, verified credentials, skills, and PGP keycard for Michael Svendsen.",
+    creator: "@thesven",
+    images: ["/og-image.png"],
+  },
+};
 
 export default function AboutPage() {
-  const { themeConfig } = useTheme();
+  const breadcrumbSchema = getBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Biography & Career", url: "/about/" },
+  ]);
+
+  const faqSchema = getAboutFaqSchema();
 
   return (
-    <div className="space-y-6 font-mono">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-white/10 gap-2">
-        <div>
-          <div className="flex items-center gap-2 text-xs">
-            <span style={{ color: themeConfig.palette.accent }} className="font-bold">
-              [4:user]
-            </span>
-            <span className="text-white/40">whoami://michael-svendsen</span>
-          </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight mt-1">
-            Biography, Career Journal & Security
-          </h1>
-        </div>
-        <div className="text-xs text-white/40">
-          Staff Systems Architect • Low-Latency Infrastructure
-        </div>
-      </div>
-
-      <AboutView />
-    </div>
+    <>
+      <JsonLd schema={breadcrumbSchema} />
+      <JsonLd schema={faqSchema} />
+      <AboutClient />
+    </>
   );
 }

@@ -1,0 +1,21 @@
+{
+  "name": "Michael Svendsen — Systems Architecture & AI Platform Engineering",
+  "short_name": "thesven",
+  "description": "High-craft personal publication and systems architecture portfolio by Michael Svendsen.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07080c",
+  "theme_color": "#07080c",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/og-image.png",
+      "sizes": "1200x630",
+      "type": "image/png"
+    }
+  ]
+}

@@ -8,7 +8,7 @@ export function generateRssFeed(
 
   const itemsXml = articles
     .map((art) => {
-      const artUrl = `${cleanUrl}/articles/${art.slug}`;
+      const artUrl = `${cleanUrl}/articles/${art.slug}/`;
       const pubDate = new Date(art.date).toUTCString();
 
       return `    <item>
