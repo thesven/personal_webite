@@ -57,24 +57,24 @@ export function FastfetchCard() {
             <span className="text-white font-semibold">Michael Svendsen</span>
           </div>
           <div className="flex items-center justify-between border-b border-white/5 pb-1">
+            <span className="text-white/40">Role:</span>
+            <span style={{ color: themeConfig.palette.cyan }}>Sr. Backend & AI Platform Engineer @ Reactiv</span>
+          </div>
+          <div className="flex items-center justify-between border-b border-white/5 pb-1">
             <span className="text-white/40">Focus:</span>
-            <span style={{ color: themeConfig.palette.cyan }}>AI Systems, MCP Edge & Distributed Architecture</span>
+            <span>Analytics • Personalization • Data Infrastructure</span>
           </div>
           <div className="flex items-center justify-between border-b border-white/5 pb-1">
-            <span className="text-white/40">Environment:</span>
-            <span>Linux x86_64 // Cloudflare Workers</span>
-          </div>
-          <div className="flex items-center justify-between border-b border-white/5 pb-1">
-            <span className="text-white/40">Toolchain:</span>
-            <span style={{ color: themeConfig.palette.green }}>TypeScript • Python • PyTorch • Hugging Face</span>
+            <span className="text-white/40">Core Stack:</span>
+            <span style={{ color: themeConfig.palette.green }}>Python • SQL • Snowflake • dbt • AWS • MCP</span>
           </div>
           <div className="flex items-center justify-between border-b border-white/5 pb-1">
             <span className="text-white/40">Open Source:</span>
-            <span>github.com/thesven (45+ Repos)</span>
+            <span>github.com/thesven (45+ Repos) • @mikesven</span>
           </div>
           <div className="flex items-center justify-between pt-1">
             <span className="text-white/40">Location:</span>
-            <span>Toronto, Ontario, Canada (EST / UTC-5)</span>
+            <span>Aurora, Ontario, Canada (GTA / EST)</span>
           </div>
         </div>
       </div>

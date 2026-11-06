@@ -13,6 +13,134 @@ export interface Article {
 
 export const ARTICLES: Article[] = [
   {
+    slug: "snowflake-dbt-shopify-ecommerce-analytics",
+    title: "Snowflake and dbt for E-Commerce Analytics: How We Built a Shopify Data Platform",
+    subtitle: "The unglamorous data layer that makes AI trustworthy: establishing a single source of truth between merchant dashboards and autonomous agents",
+    date: "2026-07-15",
+    readTime: "6 min read",
+    tags: ["#data-engineering", "#snowflake", "#dbt", "#ai-agents", "#shopify"],
+    category: "Data Platform",
+    author: "Michael Svendsen",
+    summary: "Everyone's racing to bolt AI agents onto products. But AI that recommends what to feature in a store is only as good as the numbers underneath it. Here is how we architected Snowflake and dbt so dashboards and AI agents consume the exact same verified numbers.",
+    content: `
+### 1. The Trust Problem with AI in E-Commerce
+
+Everyone is racing to bolt AI agents onto their software. But AI that recommends what to feature in a merchant's store is only as good as the numbers underneath it.
+
+If the analytics dashboard says one thing and the AI agent claims another, the merchant immediately stops trusting both. To prevent this dissonance at Reactiv, before building user-facing agentic tools, we engineered the platform underneath them: **Snowflake** for the analytical heavy lifting and **dbt** to transform raw merchant streams into product-ready, mathematically verified datasets.
+
+\`\`\`text
+Shopify Event Stream ──> AWS Ingestion ──> Snowflake Raw
+                                                │
+                                          dbt Modeling
+                                                │
+                                    Unified Metric Store
+                                      ┌─────────┴─────────┐
+                                      ▼                   ▼
+                            Merchant Dashboards    AI Studio Agent
+\`\`\`
+
+### 2. The Core Decision: One Source of Truth
+
+The fundamental architectural principle was simple: **one place where metrics get computed, one set of numbers everyone reads.**
+
+Dashboards and AI agents consume the exact same exported data. We modeled our dbt pipelines that way back when the dashboard was the only consumer:
+
+\`\`\`sql
+-- models/marts/ecommerce/fct_product_performance.sql
+{{ config(
+    materialized = 'incremental',
+    unique_key = 'product_id',
+    cluster_by = ['merchant_id', 'recorded_date']
+) }}
+
+select
+    p.merchant_id,
+    p.product_id,
+    p.title,
+    count(distinct o.order_id) as total_orders,
+    sum(o.gross_revenue_cents) as total_revenue_cents,
+    round(count(distinct o.order_id)::float / nullif(count(distinct v.session_id), 0), 4) as conversion_rate
+from {{ ref('stg_shopify__products') }} p
+left join {{ ref('stg_shopify__orders') }} o on p.product_id = o.product_id
+left join {{ ref('stg_analytics__pageviews') }} v on p.product_id = v.product_id
+group by 1, 2, 3
+\`\`\`
+
+### 3. Powering the AI Studio Agent
+
+When our AI Studio Agent and Scheduler showed up needing a merchant store's top performers to decide what carousels, hero banners, and products to feature, it didn't guess or execute ad-hoc fuzzy queries. It simply read the identical pre-aggregated numbers the merchant already saw on their live dashboard.
+
+By coupling strict dbt schema tests, freshness monitors, and cluster-keyed queries, we reduced core pipeline runtimes by over **50%**, ensuring zero metric drift across our ecosystem.
+
+> [!IMPORTANT]
+> The unglamorous data layer is what makes the AI sitting on top of it trustworthy. Without rigorous analytical guarantees, agentic recommendations are merely educated hallucinations.
+    `.trim(),
+  },
+  {
+    slug: "spypoint-mcp-trail-camera-ai",
+    title: "SPYPOINT MCP: Connecting Trail-Camera Telemetry to AI Assistants",
+    subtitle: "Clustering 146 photo records into distinct wildlife visits to predict dawn photography windows with 19 tools and 112 automated tests",
+    date: "2026-10-08",
+    readTime: "5 min read",
+    tags: ["#mcp", "#python", "#iot", "#wildlife-photography", "#ai"],
+    category: "Applied AI",
+    author: "Michael Svendsen",
+    summary: "I wanted to ask my agent: 'Based on my trail-camera photos, when should I go photograph deer tomorrow?' So I built an MCP server for SPYPOINT with 19 tools, 112 automated tests, and burst clustering algorithms.",
+    content: `
+### 1. The Practical Agent Question
+
+I wanted to ask my AI assistant a practical question:
+> *"Based on my trail-camera photos, when should I go photograph deer tomorrow?"*
+
+To solve this, I designed and built an open-source Model Context Protocol (MCP) server for SPYPOINT cellular trail cameras. It connects an LLM agent directly to camera images and sensor metadata, empowering it to inspect actual photos, compare environmental conditions, create contact sheets, and build resumable local archives.
+
+\`\`\`text
+Remote Cellular Camera ──(Cellular Uplink)──> SPYPOINT API
+                                                   │
+                                      spypoint_mcp (Python Server)
+                                       ├─ 19 MCP Tools
+                                       ├─ 112 Automated Tests
+                                       └─ Photo Grouping & Contact Sheets
+                                                   │
+                                            AI Assistant (Claude)
+\`\`\`
+
+### 2. Raw Captures vs. Distinct Visits
+
+For the server's first real-world field test, we pulled 146 photo records. Of those, 104 were tagged as "deer" or "buck".
+
+However, grouping nearby captures by timestamp and burst delta suggested only **14 apparent visits**. That distinction is crucial: 104 photos does not mean 104 separate deer visits. It represents bursts of multi-shot triggers during single grazing intervals.
+
+\`\`\`python
+def cluster_camera_captures(records: list[PhotoRecord], window_minutes: int = 15) -> list[WildlifeVisit]:
+    """Cluster raw burst records into discrete ecological visits."""
+    records.sort(key=lambda r: r.captured_at)
+    visits: list[WildlifeVisit] = []
+    
+    for record in records:
+        if not visits or (record.captured_at - visits[-1].end_time).total_seconds() > window_minutes * 60:
+            visits.append(WildlifeVisit(start_time=record.captured_at, end_time=record.captured_at, photos=[record]))
+        else:
+            visits[-1].end_time = record.captured_at
+            visits[-1].photos.append(record)
+            
+    return visits
+\`\`\`
+
+### 3. Architecture & Safety Boundaries
+
+The project includes:
+- **19 Structured Tools:** Ranging from photo search, camera battery and signal health, to automated contact sheet generation.
+- **112 Automated Tests:** Full test suite covering pagination, network retries, and schema contract validation.
+- **Strict Read-Only Access:** The server enforces read-only access—no camera setting alterations or paid HD transmission requests are permitted.
+
+The resulting analysis accurately isolated a promising dawn photography window, grounded strictly in empirical sensor data.
+
+Explore the open-source code on GitHub: [thesven/spypoint_mcp](https://github.com/thesven/spypoint_mcp).
+    `.trim(),
+  },
+  {
     slug: "architecting-litemcp-cloudflare-workers",
     title: "Architecting LiteMCP: Bringing Model Context Protocol to Cloudflare Workers",
     subtitle: "Implementing standards-compliant JSON-RPC 2.0 and Server-Sent Events on the serverless edge",

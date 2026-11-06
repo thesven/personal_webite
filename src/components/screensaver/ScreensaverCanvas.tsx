@@ -458,7 +458,7 @@ export function ScreensaverCanvas({
         <div className="absolute bottom-14 sm:bottom-16 left-0 right-0 z-30 flex flex-col items-center gap-3 font-mono text-center pointer-events-none">
           <div className="flex items-center gap-2.5 text-xs tracking-widest text-white/75 bg-black/60 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10 shadow-lg">
             <span style={{ color: themeConfig.palette.accent }} className="font-bold">&gt;</span>
-            <span className="uppercase tracking-widest font-medium">Michael Svendsen // AI Systems & Edge Architecture</span>
+            <span className="uppercase tracking-widest font-medium">Michael Svendsen // Senior Backend & AI Platform Engineer</span>
             <span
               className="inline-block w-1.5 h-1.5 rounded-full animate-ping"
               style={{ backgroundColor: themeConfig.palette.accent }}

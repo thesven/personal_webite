@@ -49,14 +49,15 @@ export function InteractiveShell() {
         output = (
           <div className="space-y-1 text-white/70">
             <div>Available shell utilities:</div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1 pt-1 text-white/90">
-              <div><span className="text-cyan-300">whoami</span> — Identity & background</div>
-              <div><span className="text-cyan-300">articles</span> — List publications</div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 pt-1 text-white/90">
+              <div><span className="text-cyan-300">whoami</span> — Identity</div>
+              <div><span className="text-cyan-300">skills</span> — Tech stack</div>
+              <div><span className="text-cyan-300">certs</span> — Credentials</div>
+              <div><span className="text-cyan-300">articles</span> — Publications</div>
               <div><span className="text-cyan-300">projects</span> — Systems portfolio</div>
               <div><span className="text-cyan-300">about</span> — Career journal</div>
-              <div><span className="text-cyan-300">screensaver</span> — Launch graphics engine</div>
-              <div><span className="text-cyan-300">uname</span> — System architecture</div>
-              <div><span className="text-cyan-300">clear</span> — Clear terminal output</div>
+              <div><span className="text-cyan-300">screensaver</span> — Graphics engine</div>
+              <div><span className="text-cyan-300">clear</span> — Clear output</div>
             </div>
           </div>
         );
@@ -64,9 +65,31 @@ export function InteractiveShell() {
       case "whoami":
         output = (
           <div className="text-white/80 space-y-1">
-            <div>Michael Svendsen (Toronto, Ontario)</div>
-            <div className="text-white/50">AI Systems, MCP Edge Architecture & TypeScript Engineer</div>
-            <div>Author of LiteMCP, GGUF-n-Go, and open-source fine-tuned models on Hugging Face. Wildlife photographer based in Ontario.</div>
+            <div className="font-bold text-white">Michael Svendsen (Aurora, Ontario, Canada)</div>
+            <div className="text-cyan-300">Senior Backend & AI Platform Engineer @ Reactiv</div>
+            <div className="text-white/60">
+              Architecting production analytics, personalization, and data infrastructure across AWS and Snowflake with dbt. Creator of LiteMCP, SPYPOINT MCP, GGUF-n-Go, and open-source models on Hugging Face.
+            </div>
+          </div>
+        );
+        break;
+      case "skills":
+      case "stack":
+        output = (
+          <div className="text-white/80 space-y-1">
+            <div><span className="text-cyan-300">Languages & Data:</span> Python, SQL, TypeScript, Bash, Go</div>
+            <div><span className="text-cyan-300">Data Platform:</span> Snowflake, dbt, AWS (Lambda, Step Functions, Glue, Redshift Serverless)</div>
+            <div><span className="text-cyan-300">AI & Agents:</span> Amazon Bedrock AgentCore, Model Context Protocol (MCP), Deep Learning, LLM Fine-Tuning</div>
+          </div>
+        );
+        break;
+      case "certs":
+      case "certifications":
+        output = (
+          <div className="text-white/80 space-y-1">
+            <div>• <span className="text-cyan-300">Snowflake Northstar</span> — Data Ingestion, Transformation, and Delivery (Issued Apr 2025)</div>
+            <div>• <span className="text-amber-300">Edinburgh Whisky Academy</span> — Certificate in Scotch Whisky</div>
+            <div>• <span className="text-emerald-400">Honors:</span> FWA Site of the Day (Lexus IS with Jam3) & ADCC Bronze</div>
           </div>
         );
         break;
