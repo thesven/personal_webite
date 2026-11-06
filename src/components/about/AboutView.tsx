@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useTheme } from "@/context/ThemeContext";
+import { trackPgpKeyCopy, trackExternalLinkClick } from "@/lib/analytics";
 
 const CAREER_COMMITS = [
   {
@@ -129,6 +130,7 @@ export function AboutView() {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(PGP_FINGERPRINT);
       setCopied(true);
+      trackPgpKeyCopy(PGP_FINGERPRINT, "about_view");
       setTimeout(() => setCopied(false), 2000);
     }
   };
@@ -293,6 +295,13 @@ export function AboutView() {
                 href="https://www.linkedin.com/in/mikesven/"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() =>
+                  trackExternalLinkClick(
+                    "https://www.linkedin.com/in/mikesven/",
+                    "linkedin",
+                    "about_footer"
+                  )
+                }
                 className="hover:text-cyan-300 transition"
               >
                 LinkedIn
@@ -302,6 +311,13 @@ export function AboutView() {
                 href="https://github.com/thesven"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() =>
+                  trackExternalLinkClick(
+                    "https://github.com/thesven",
+                    "github",
+                    "about_footer"
+                  )
+                }
                 className="hover:text-cyan-300 transition"
               >
                 GitHub
@@ -311,6 +327,13 @@ export function AboutView() {
                 href="https://huggingface.co/thesven"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() =>
+                  trackExternalLinkClick(
+                    "https://huggingface.co/thesven",
+                    "demo",
+                    "about_footer"
+                  )
+                }
                 className="hover:text-cyan-300 transition"
               >
                 Hugging Face
@@ -320,6 +343,13 @@ export function AboutView() {
                 href="https://photography.mikesvendsen.net"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() =>
+                  trackExternalLinkClick(
+                    "https://photography.mikesvendsen.net",
+                    "demo",
+                    "about_footer"
+                  )
+                }
                 className="hover:text-cyan-300 transition"
               >
                 Photography
@@ -327,6 +357,13 @@ export function AboutView() {
               <span>•</span>
               <a
                 href="mailto:michael@mikesvendsen.net"
+                onClick={() =>
+                  trackExternalLinkClick(
+                    "mailto:michael@mikesvendsen.net",
+                    "email",
+                    "about_footer"
+                  )
+                }
                 className="hover:text-cyan-300 transition"
               >
                 Email

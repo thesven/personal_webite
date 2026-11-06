@@ -1,13 +1,16 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import { trackCodeCopy } from "@/lib/analytics";
 
 export function ArticleContent({
   html,
   itemProp,
+  articleSlug,
 }: {
   html: string;
   itemProp?: string;
+  articleSlug?: string;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -24,6 +27,8 @@ export function ArticleContent({
       const codeWrapper = target.closest(".code-block-wrapper");
       const codeEl = codeWrapper?.querySelector("code");
       const textToCopy = codeEl?.textContent || "";
+      const langMatch = codeEl?.className?.match(/language-([a-z0-9_-]+)/i);
+      const language = langMatch ? langMatch[1] : "plaintext";
 
       let success = false;
       if (navigator.clipboard && window.isSecureContext) {
@@ -53,6 +58,7 @@ export function ArticleContent({
       }
 
       if (success) {
+        trackCodeCopy(articleSlug || "unknown", language);
         const originalText = target.innerText;
         target.innerText = "COPIED ✓";
         target.classList.add("text-emerald-400", "border-emerald-500/40");
@@ -65,7 +71,7 @@ export function ArticleContent({
 
     container.addEventListener("click", handleClick);
     return () => container.removeEventListener("click", handleClick);
-  }, []);
+  }, [articleSlug]);
 
   return (
     <div

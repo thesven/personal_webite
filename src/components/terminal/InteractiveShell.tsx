@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "@/context/ThemeContext";
 import { playSwitchClick } from "@/lib/audio";
 import { processShellCommand, getShellCompletions } from "@/lib/shellCommands";
+import { trackTerminalCommand, trackTerminalEasterEgg } from "@/lib/analytics";
 
 interface HistoryEntry {
   command: string;
@@ -120,6 +121,13 @@ export function InteractiveShell() {
     setCommandHistory((prev) => [...prev, raw]);
 
     const result = processShellCommand(raw);
+    const root = raw.split(/\s+/)[0].toLowerCase();
+    const isValid = result.type !== "ERROR";
+    trackTerminalCommand(root, raw, isValid);
+
+    if (["sudo", "rm", "matrix", "easteregg"].some((egg) => raw.toLowerCase().includes(egg))) {
+      trackTerminalEasterEgg(root);
+    }
 
     if (result.type === "CLEAR") {
       setHistory([]);

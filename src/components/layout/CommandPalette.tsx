@@ -6,6 +6,7 @@ import { useTheme, THEMES, ThemeId } from "@/context/ThemeContext";
 import { ARTICLES } from "@/data/articles";
 import { PROJECTS } from "@/data/projects";
 import { playSwitchClick } from "@/lib/audio";
+import { trackCommandPaletteUse } from "@/lib/analytics";
 
 interface CommandItem {
   id: string;
@@ -113,6 +114,7 @@ function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
   );
 
   const executeCommand = (cmd: CommandItem) => {
+    trackCommandPaletteUse("execute", query, cmd.id, cmd.category);
     playSwitchClick("down", soundEnabled);
     onClose();
     cmd.action();

@@ -5,6 +5,7 @@ import { PROJECTS, Project } from "@/data/projects";
 import { useTheme } from "@/context/ThemeContext";
 import { generateAsciiTree } from "@/lib/treeGenerator";
 import { playSwitchClick } from "@/lib/audio";
+import { trackExternalLinkClick } from "@/lib/analytics";
 
 const ASCII_SPYPOINT_MCP_SCHEMA = `
 ┌────────────────────────────────────────────────────────┐
@@ -73,6 +74,13 @@ export function ProjectsView() {
               href={flagshipProject.githubUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() =>
+                trackExternalLinkClick(
+                  flagshipProject.githubUrl,
+                  "github",
+                  "flagship_spypoint"
+                )
+              }
               className="text-white hover:underline"
             >
               github.com/thesven/spypoint_mcp &rarr;
@@ -206,6 +214,13 @@ export function ProjectsView() {
                     href={p.githubUrl}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() =>
+                      trackExternalLinkClick(
+                        p.githubUrl,
+                        "github",
+                        `project_${p.slug}`
+                      )
+                    }
                     className="hover:text-white transition"
                   >
                     repo &rarr;

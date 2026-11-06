@@ -5,6 +5,11 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme, THEMES, ThemeId } from "@/context/ThemeContext";
 import { playSwitchClick } from "@/lib/audio";
+import {
+  trackWorkspaceSwitch,
+  trackCommandPaletteUse,
+  trackScreensaverAction,
+} from "@/lib/analytics";
 
 const WORKSPACES = [
   { href: "/sys", label: "[1:sys]", title: "System Dashboard (1)" },
@@ -71,8 +76,10 @@ export function Waybar() {
   const handleModeToggle = () => {
     playSwitchClick("space", soundEnabled);
     if (isRootScreensaver) {
+      trackScreensaverAction("enter_site", "waybar_toggle");
       router.push("/sys");
     } else {
+      trackScreensaverAction("change_effect", "waybar_toggle");
       router.push("/");
     }
   };
@@ -92,6 +99,7 @@ export function Waybar() {
           <button
             onClick={() => {
               playSwitchClick("space", soundEnabled);
+              trackScreensaverAction("change_effect", "brand_badge");
               router.push("/");
             }}
             title="Return to Screensaver Landing (Space / Super+Esc)"
@@ -123,6 +131,7 @@ export function Waybar() {
                   href={ws.href}
                   onClick={() => {
                     playSwitchClick("down", soundEnabled);
+                    trackWorkspaceSwitch(pathname || "/", ws.href, "waybar_click");
                   }}
                   title={ws.title}
                   className={`px-2.5 py-1 rounded font-medium transition ${
@@ -152,6 +161,7 @@ export function Waybar() {
             onClick={() => {
               setCommandPaletteOpen(true);
               playSwitchClick("down", soundEnabled);
+              trackCommandPaletteUse("open");
             }}
             className="flex items-center gap-2 px-3 py-1 rounded bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white transition text-xs cursor-pointer"
           >

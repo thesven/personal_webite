@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { renderMarkdown } from "@/lib/markdown";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { ArticleContent } from "@/components/articles/ArticleContent";
+import { ArticleTracker } from "@/components/articles/ArticleTracker";
 import { getArticleSchema, getBreadcrumbSchema, SITE_URL } from "@/lib/seo";
 
 export function generateStaticParams() {
@@ -84,6 +85,7 @@ export default async function ArticleDetailPage({
     <>
       <JsonLd schema={breadcrumbSchema} />
       <JsonLd schema={articleSchema} />
+      <ArticleTracker article={article} />
 
       <article
         itemScope
@@ -181,7 +183,11 @@ export default async function ArticleDetailPage({
             </aside>
 
             {/* Article Markdown HTML Content */}
-            <ArticleContent html={htmlContent} itemProp="articleBody" />
+            <ArticleContent
+              html={htmlContent}
+              itemProp="articleBody"
+              articleSlug={article.slug}
+            />
 
             {/* AEO / LLM Citation & Reference Box */}
             <footer className="mt-10 pt-6 border-t border-white/10 text-xs text-white/50 space-y-2 font-mono">

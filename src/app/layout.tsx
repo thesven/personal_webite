@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { ShellLayout } from "@/components/layout/ShellLayout";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { AnalyticsTracker } from "@/components/analytics/AnalyticsTracker";
 import { getPersonSchema, getWebsiteSchema } from "@/lib/seo";
 
 const geistSans = Geist({
@@ -134,6 +135,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased selection:bg-white/20 selection:text-white min-h-screen flex flex-col bg-[#07080c] text-[#e0e2ec]`}
       >
+        <AnalyticsTracker />
         <ThemeProvider>
           <ShellLayout>{children}</ShellLayout>
         </ThemeProvider>

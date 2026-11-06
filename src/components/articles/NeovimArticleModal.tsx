@@ -1,11 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Article } from "@/data/articles";
 import { useTheme } from "@/context/ThemeContext";
 import { playSwitchClick } from "@/lib/audio";
 import { renderMarkdown } from "@/lib/markdown";
 import { ArticleContent } from "@/components/articles/ArticleContent";
+import { trackArticleView } from "@/lib/analytics";
 
 export function NeovimArticleModal({
   article,
@@ -15,6 +16,12 @@ export function NeovimArticleModal({
   onClose: () => void;
 }) {
   const { themeConfig, soundEnabled } = useTheme();
+
+  useEffect(() => {
+    if (article) {
+      trackArticleView(article.slug, article.title, article.category, "modal");
+    }
+  }, [article]);
 
   if (!article) return null;
 
@@ -80,7 +87,10 @@ export function NeovimArticleModal({
           </div>
 
           {/* Markdown Content */}
-          <ArticleContent html={renderMarkdown(article.content)} />
+          <ArticleContent
+            html={renderMarkdown(article.content)}
+            articleSlug={article.slug}
+          />
         </div>
 
         {/* Lualine Status Bar */}

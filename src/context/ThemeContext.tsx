@@ -4,6 +4,12 @@ import React, { createContext, useContext, useEffect, useState, useTransition } 
 import { useRouter, usePathname } from "next/navigation";
 import { playSwitchClick, syncAudioState } from "@/lib/audio";
 import { resolveNavigationKey } from "@/lib/navigation";
+import {
+  trackThemeChange,
+  trackAudioToggle,
+  trackCrtToggle,
+  trackWorkspaceSwitch,
+} from "@/lib/analytics";
 
 export type ThemeId = "tokyonight" | "flexoki" | "oxocarbon" | "catppuccin" | "monochrome";
 
@@ -169,6 +175,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     try {
       localStorage.setItem("ms_theme", newTheme);
     } catch {}
+    trackThemeChange(newTheme, "waybar");
     playSwitchClick("up", soundEnabled);
   };
 
@@ -182,6 +189,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     try {
       localStorage.setItem("ms_sound", String(next));
     } catch {}
+    trackAudioToggle(next);
     if (next) playSwitchClick("down", true);
   };
 
@@ -191,6 +199,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     try {
       localStorage.setItem("ms_crt", String(next));
     } catch {}
+    trackCrtToggle(next);
     playSwitchClick("down", soundEnabled);
   };
 
@@ -229,6 +238,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         setCommandPaletteOpen(false);
       } else if (action.type === "NAVIGATE") {
         e.preventDefault();
+        trackWorkspaceSwitch(pathname || "/", action.path, "keyboard");
         playSwitchClick(action.path === "/" ? "space" : "down", soundEnabled);
         router.push(action.path);
       }

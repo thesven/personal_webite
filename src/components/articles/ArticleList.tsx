@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Article, getAllTags, getAllCategories, getTagCounts, filterArticles } from "@/data/articles";
 import { useTheme } from "@/context/ThemeContext";
 import { playSwitchClick } from "@/lib/audio";
+import { trackArticleFilter } from "@/lib/analytics";
 
 export function ArticleList({
   articles,
@@ -34,6 +35,12 @@ export function ArticleList({
     () => filterArticles(articles, debouncedQuery, selectedTag, selectedCategory),
     [articles, debouncedQuery, selectedTag, selectedCategory]
   );
+
+  useEffect(() => {
+    if (debouncedQuery.trim().length > 1) {
+      trackArticleFilter("search_query", debouncedQuery.trim(), filtered.length);
+    }
+  }, [debouncedQuery, filtered.length]);
 
   return (
     <div className="space-y-4 font-mono text-xs">
@@ -80,6 +87,7 @@ export function ArticleList({
                   onClick={() => {
                     setSelectedCategory(cat);
                     playSwitchClick("down", soundEnabled);
+                    trackArticleFilter("category", cat, articles.length);
                   }}
                   className={`px-2 py-0.5 rounded transition text-[11px] whitespace-nowrap ${
                     isSelected
@@ -107,6 +115,7 @@ export function ArticleList({
                 onClick={() => {
                   setSelectedTag(t);
                   playSwitchClick("down", soundEnabled);
+                  trackArticleFilter("category", `tag:${t}`, count);
                 }}
                 className={`px-2 py-0.5 rounded transition text-[11px] whitespace-nowrap flex items-center gap-1 ${
                   isSelected

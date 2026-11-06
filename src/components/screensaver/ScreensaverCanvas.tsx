@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useTheme } from "@/context/ThemeContext";
 import { playSwitchClick } from "@/lib/audio";
+import { trackScreensaverAction } from "@/lib/analytics";
 import {
   EffectType,
   BurnParticle,
@@ -166,6 +167,7 @@ export function ScreensaverCanvas({
     stateRef.current.effect = next;
     setCurrentEffect(next);
     resetGridForEffect(next);
+    trackScreensaverAction("change_effect", next);
     playSwitchClick("up", soundEnabled);
   }, [soundEnabled, resetGridForEffect]);
 
@@ -174,6 +176,7 @@ export function ScreensaverCanvas({
       stateRef.current.effect = eff;
       setCurrentEffect(eff);
       resetGridForEffect(eff);
+      trackScreensaverAction("change_effect", eff);
       playSwitchClick("down", soundEnabled);
     },
     [soundEnabled, resetGridForEffect]
