@@ -186,19 +186,25 @@ The site structure adopts a **tiling desktop workspace model**, where switching 
 
 ---
 
-## 5. Technology Stack Recommendation
+## 5. Technology Stack Implementation: Next.js 16 Static Export
 
-| Dimension | Recommended Option: **Astro + Tailwind CSS** | Alternative: **Next.js (App Router)** |
+The site is built with **Next.js 16 (App Router)** and configured for **pure static export (`output: 'export'`)**:
+
+| Dimension | Specification | Architecture Benefit |
 | :--- | :--- | :--- |
-| **Why it fits** | Ultra-lightweight, zero client-side JS overhead on blog posts, native Markdown/MDX content collections, fastest loading speeds. | Great if server-side database authentication or dynamic real-time features are required. |
-| **Animation Engine** | HTML5 Canvas / Lightweight Vanilla JS for screensaver effects (60-120fps with minimal CPU). | Framer Motion + Canvas. |
-| **Styling** | Tailwind CSS v4 with custom theme tokens matching Omarchy palettes. | Tailwind CSS. |
-| **Hosting** | Free, instant deployment on **GitHub Pages** (directly from this repo) or Cloudflare Pages / Vercel. | Vercel / Cloudflare. |
+| **Framework** | Next.js 16 (React 19, TypeScript) | Modular component hierarchy, typed routing, robust static generator. |
+| **Hosting** | **Cloudflare Pages (Free Plan)** | 100% free hosting, unlimited requests, global edge CDN caching, zero cold starts, zero compute billing. |
+| **Database** | **None (Zero Database)** | Eliminates operational overhead, backups, SQL injection vectors, and cloud hosting costs. |
+| **Content Authoring** | Static TypeScript / Markdown Collections (`src/data/articles.ts`) | Add new articles manually; automatically pre-rendered at build time via `generateStaticParams`. |
+| **Animation Engine** | HTML5 Canvas 2D + Delta Corps Priest 1 FIGlet | Hardware-accelerated 120 FPS text rasterization, 8 procedural terminal effects, radial phosphor bloom, and specular glints. |
+| **Styling** | Tailwind CSS v4 | Dynamic theme tokens supporting Tokyo Night, Flexoki, Oxocarbon, Catppuccin, and Monochrome. |
+| **Audio** | Web Audio API | Synthesized mechanical keyboard switch feedback with zero external sound asset dependencies. |
 
 ---
 
-## 6. Next Steps & Discussion Points
+## 6. Cloudflare Pages Deployment Architecture
 
-1. **Profession / Specialization**: Confirm Michael's core domains to tailor copy, categories, and showcase layout.
-2. **Screensaver Behavior**: Decide whether the screensaver is a fullscreen intro that fades on scroll/keypress, an interactive hero section at the top of the home page, or a toggleable mode.
-3. **Interactive Prototype**: Review the live interactive screensaver prototype built in the artifact directory.
+1. **Static Build Output**: `npm run build` outputs all pre-rendered HTML, CSS, and JS to `out/`.
+2. **Trailing Slashes**: Enforced via `trailingSlash: true` in `next.config.ts`, generating clean directories with `index.html` files that Cloudflare Edge serves natively without URL redirects.
+3. **CI/CD Automation**: `.github/workflows/cloudflare-pages.yml` triggers automated builds on every push to `main`.
+

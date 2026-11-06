@@ -1,0 +1,181 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useTheme, THEMES, ThemeId } from "@/context/ThemeContext";
+import { playSwitchClick } from "@/lib/audio";
+
+const WORKSPACES = [
+  { href: "/", label: "[1:sys]", title: "System Dashboard (1)" },
+  { href: "/articles", label: "[2:docs]", title: "Technical Publications (2)" },
+  { href: "/projects", label: "[3:work]", title: "Systems Showcase (3)" },
+  { href: "/about", label: "[4:user]", title: "Biography & Career (4)" },
+];
+
+export function Waybar() {
+  const pathname = usePathname();
+  const {
+    theme,
+    setTheme,
+    themeConfig,
+    soundEnabled,
+    toggleSound,
+    crtEnabled,
+    toggleCrt,
+    setScreensaverActive,
+    setCommandPaletteOpen,
+  } = useTheme();
+
+  const [clock, setClock] = useState("00:00:00");
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setClock(now.toTimeString().split(" ")[0]);
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <header
+      className="sticky top-0 z-40 w-full border-b backdrop-blur-md px-3 sm:px-4 py-2 transition-colors duration-300"
+      style={{
+        backgroundColor: "rgba(10, 11, 16, 0.85)",
+        borderColor: themeConfig.palette.border,
+      }}
+    >
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 text-xs">
+        {/* Left: Brand Moniker + Workspace Nav */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Brand Moniker Badge */}
+          <button
+            onClick={() => {
+              setScreensaverActive(true);
+              playSwitchClick("space", soundEnabled);
+            }}
+            title="Open Screensaver Hero (Space / Super+Esc)"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded transition border cursor-pointer group"
+            style={{
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
+              borderColor: themeConfig.palette.border,
+            }}
+          >
+            <span
+              className="w-2 h-2 rounded-full animate-pulse"
+              style={{ backgroundColor: themeConfig.palette.accent }}
+            />
+            <span className="font-bold tracking-wider text-white group-hover:text-cyan-300 transition">
+              SVENDSEN
+            </span>
+          </button>
+
+          {/* Workspace Tabs */}
+          <nav className="flex items-center gap-0.5 bg-black/60 p-0.5 rounded border border-white/10">
+            {WORKSPACES.map((ws) => {
+              const isActive =
+                ws.href === "/"
+                  ? pathname === "/"
+                  : pathname?.startsWith(ws.href);
+              return (
+                <Link
+                  key={ws.href}
+                  href={ws.href}
+                  onClick={() => playSwitchClick("down", soundEnabled)}
+                  title={ws.title}
+                  className={`px-2.5 py-1 rounded font-medium transition ${
+                    isActive
+                      ? "bg-white/15 text-white font-semibold border border-white/20 shadow-sm"
+                      : "text-white/60 hover:text-white hover:bg-white/5"
+                  }`}
+                  style={
+                    isActive
+                      ? {
+                          color: "#ffffff",
+                          borderColor: themeConfig.palette.accent,
+                        }
+                      : {}
+                  }
+                >
+                  {ws.label}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Center: Command Palette Pill (Desktop) */}
+        <div className="hidden md:flex items-center gap-2 text-white/50">
+          <button
+            onClick={() => {
+              setCommandPaletteOpen(true);
+              playSwitchClick("down", soundEnabled);
+            }}
+            className="flex items-center gap-2 px-3 py-1 rounded bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white transition text-xs cursor-pointer"
+          >
+            <span style={{ color: themeConfig.palette.accent }} className="font-bold">
+              &gt;_
+            </span>
+            <span>run launcher</span>
+            <kbd className="px-1 py-0.5 rounded bg-white/10 text-[10px] text-white/80 border border-white/20">
+              ⌘K
+            </kbd>
+          </button>
+          <span className="text-white/20">•</span>
+          <span className="text-white/40">hyprland/wayland</span>
+        </div>
+
+        {/* Right: Environment & Theme Controls */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Theme Selector */}
+          <div className="flex items-center bg-black/50 px-2 py-0.5 rounded border border-white/10">
+            <select
+              value={theme}
+              onChange={(e) => setTheme(e.target.value as ThemeId)}
+              className="bg-transparent text-white/80 outline-none cursor-pointer text-xs font-mono"
+            >
+              {Object.values(THEMES).map((t) => (
+                <option key={t.id} value={t.id} className="bg-zinc-900 text-white">
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* CRT Filter Toggle */}
+          <button
+            onClick={toggleCrt}
+            className={`px-2 py-0.5 rounded border transition font-mono ${
+              crtEnabled
+                ? "bg-white/10 border-white/30 text-cyan-300"
+                : "bg-black/50 border-white/10 text-white/40"
+            }`}
+            title="Toggle CRT Scanline Overlay"
+          >
+            CRT
+          </button>
+
+          {/* Audio Haptics Toggle */}
+          <button
+            onClick={toggleSound}
+            className={`px-2 py-0.5 rounded border transition ${
+              soundEnabled
+                ? "bg-white/10 border-white/30 text-white"
+                : "bg-black/50 border-white/10 text-white/40"
+            }`}
+            title="Toggle Mechanical Key Sounds"
+          >
+            {soundEnabled ? "🔊" : "🔇"}
+          </button>
+
+          {/* Live System Clock */}
+          <div className="hidden sm:flex items-center px-2 py-0.5 rounded bg-black/60 border border-white/10 text-white/70 font-mono tracking-wider">
+            {clock}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
