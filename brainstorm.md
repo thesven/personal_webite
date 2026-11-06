@@ -135,23 +135,54 @@ Curated color palettes available via one-click theme switcher:
 
 ---
 
-## 4. Content Architecture & Publishing Workflow
+---
 
-### 4.1 Articles & Notes
-- Categorized by topic (e.g. Systems Architecture, Software Engineering, AI & Automation, Infrastructure, Leadership).
-- Markdown / MDX workflow: Articles stored as `.md` or `.mdx` files with frontmatter (title, date, tags, description, draft status).
-- Features:
-  - Estimated reading time
-  - Interactive table of contents
-  - Code blocks with syntax highlighting, copy button, and file-tab headers
-  - RSS / Atom feed generation (`/rss.xml`) for technical readers
+## 4. Interior Pages Architecture & UX Polish
 
-### 4.2 Project & Open-Source Showcase
-- Card layout displaying active repositories, live demos, architecture diagrams, and tech tags.
-- Direct integration with GitHub API (optional dynamic star/commit counts).
+The site structure adopts a **tiling desktop workspace model**, where switching workspaces via keyboard shortcuts (`1`, `2`, `3`, `4`) or Waybar tabs feels instantaneous, persistent, and fluid:
 
-### 4.3 Search & Command Palette (`Super + Space` / `⌘K`)
-- In-browser instant search across all articles, tags, and pages using a fuzzy search engine (Pagefind or Fuse.js).
+### 4.1 Workspace 1: Dashboard (`1:hero`)
+- **Tiling Hero Window**: Window titlebar with macOS/Hyprland window controls (`● ● ●`), system telemetry chip (`arch: x86_64`, `wm: hyprland`, `status: active`), and executive positioning statement.
+- **Split Layout**:
+  - Left column: Latest featured dispatch snippets with direct jump to article reader.
+  - Right column: Host information TUI box (kernel, compositor, primary stack, GitHub profile) and flagship build highlight.
+
+### 4.2 Workspace 2: Articles Hub & Publications (`2:articles`)
+- **Interactive Tag Filtering**: Instant category switching (`All`, `#systems`, `#architecture`, `#performance`, `#tooling`) without full-page reloads.
+- **Publication Card Meta**:
+  - Semantic tag pill, publication timestamp, calculated read time, and hover transition indicators.
+- **In-Depth Article Reader Modal**:
+  - Clicking any card opens a distraction-free, high-craft editorial modal.
+  - Breadcrumb navigation (`publication://systems-design`).
+  - GitHub-style callouts (`> [!NOTE]`, `> [!TIP]`).
+  - Tabbed syntax-highlighted code blocks with language indicators and one-click copy buttons.
+  - Keyboard accessible: dismissible instantly via `Esc`.
+
+### 4.3 Workspace 3: Work & Projects Showcase (`3:work`)
+- **Flagship Project Feature**:
+  - Deep-dive card for flagship repositories (`sys-toolkit`).
+  - Embedded ASCII architecture schema visualizing data flow from kernel/eBPF through event ring buffers to Wayland IPC and TUI renderers.
+  - Metadata badges: Language toolchain (Rust, Go), license, release state, and live links.
+- **Secondary Grid**:
+  - Modular cards for supporting projects, lab infrastructure (`infra-core`), and web tools.
+
+### 4.4 Workspace 4: Biography & Career Journal (`4:about`)
+- **Executive Bio**: Engineering values, distributed systems focus, and opinionated software craftsmanship philosophy.
+- **System Journal / Work History**:
+  - Minimalist timeline styled like a system journal (`SYSTEM_JOURNAL // WORK_HISTORY`).
+  - Chronological positions (Principal Architect, Staff Infrastructure Lead, Senior Systems Engineer) with measurable impact metrics.
+- **Core Architectural Competency Matrix**:
+  - Visual competency meters displaying mastery in distributed systems, cloud infrastructure, systems programming, and performance graphics.
+- **Direct Contact & Security Keycard**:
+  - PGP fingerprint block (`4A92 F81C 023E B7D8`) with copy capability, verified GitHub link, remote location status, and advisory availability.
+
+### 4.5 The Command Palette (`⌘K` / `Ctrl+K`)
+- Walker-inspired floating launcher modal accessible from any screen via `⌘K` or the top Waybar search pill.
+- Supports instant fuzzy filtering to:
+  - Jump directly between workspaces (`1` to `4`).
+  - Trigger screensaver mode (`Space`).
+  - Change color themes on the fly (`Tokyo Night`, `Flexoki`, `Oxocarbon`, `Catppuccin`, `Monochrome`).
+  - Dismissible via `Esc` or clicking outside.
 
 ---
 
