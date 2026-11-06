@@ -29,9 +29,24 @@ jobs:
       - name: Build Next.js Static Export
         run: npm run build
 
-      - name: Deploy to Cloudflare Pages
+      - name: Deploy to Cloudflare Pages (Wrangler)
+        if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
         uses: cloudflare/wrangler-action@v3
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy out --project-name=personal-website
+
+      - name: Native Cloudflare Pages Build Notice
+        if: env.CLOUDFLARE_API_TOKEN == '' || env.CLOUDFLARE_ACCOUNT_ID == ''
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          echo "✅ Next.js static export build in out/ completed successfully."
+          echo "ℹ️  CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID repository secret is not set in GitHub Actions."
+          echo "ℹ️  If your site is connected via Cloudflare Pages Native Git Integration (Method 1 in README.md), Cloudflare automatically triggers its global edge build and deployment upon push to main."
+          echo "ℹ️  To deploy directly via this GitHub Actions workflow using Wrangler (Method 2 in README.md), add CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID in Repository Settings ➔ Secrets and variables ➔ Actions."
