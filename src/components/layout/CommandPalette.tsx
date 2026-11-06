@@ -44,7 +44,7 @@ export function CommandPalette() {
       category: "WORKSPACES",
       title: "Jump to [1:sys] Home Dashboard",
       shortcut: "1",
-      action: () => router.push("/"),
+      action: () => router.push("/sys"),
     },
     {
       id: "ws-articles",
@@ -72,7 +72,7 @@ export function CommandPalette() {
       category: "SYSTEM",
       title: "Launch Delta Corps Priest 1 Screensaver",
       shortcut: "Space",
-      action: () => setScreensaverActive(true),
+      action: () => router.push("/"),
     },
     {
       id: "toggle-crt",

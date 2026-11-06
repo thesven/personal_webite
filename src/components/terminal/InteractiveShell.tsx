@@ -111,7 +111,7 @@ export function InteractiveShell() {
       case "screensaver":
       case "tte":
         output = <div>Activating Delta Corps Priest 1 Screensaver...</div>;
-        setTimeout(() => setScreensaverActive(true), 300);
+        setTimeout(() => router.push("/"), 300);
         break;
       case "uname":
       case "uname -a":

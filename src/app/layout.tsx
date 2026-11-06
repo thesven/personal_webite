@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/context/ThemeContext";
-import { Waybar } from "@/components/layout/Waybar";
-import { CommandPalette } from "@/components/layout/CommandPalette";
+import { ShellLayout } from "@/components/layout/ShellLayout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -50,17 +49,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased selection:bg-white/20 selection:text-white min-h-screen flex flex-col bg-[#07080c] text-[#e0e2ec]`}
       >
         <ThemeProvider>
-          <Waybar />
-          <CommandPalette />
-          <main className="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-8">
-            {children}
-          </main>
-          <footer className="border-t border-white/10 py-6 text-center text-xs text-white/40 font-mono">
-            <div>Michael Svendsen • Senior Backend & AI Platform Engineer • Aurora / Toronto, ON</div>
-            <div className="text-[10px] text-white/25 mt-1">
-              Static Edge Build • Cloudflare Pages • zero-database architecture
-            </div>
-          </footer>
+          <ShellLayout>{children}</ShellLayout>
         </ThemeProvider>
       </body>
     </html>

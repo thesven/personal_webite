@@ -7,7 +7,7 @@ import { useTheme, THEMES, ThemeId } from "@/context/ThemeContext";
 import { playSwitchClick } from "@/lib/audio";
 
 const WORKSPACES = [
-  { href: "/", label: "[1:sys]", title: "System Dashboard (1)" },
+  { href: "/sys", label: "[1:sys]", title: "System Dashboard (1)" },
   { href: "/articles", label: "[2:docs]", title: "Technical Publications (2)" },
   { href: "/projects", label: "[3:work]", title: "Systems Showcase (3)" },
   { href: "/about", label: "[4:user]", title: "Biography & Career (4)" },
@@ -24,12 +24,11 @@ export function Waybar() {
     toggleSound,
     crtEnabled,
     toggleCrt,
-    screensaverActive,
-    setScreensaverActive,
     setCommandPaletteOpen,
   } = useTheme();
 
   const [clock, setClock] = useState("00:00:00");
+  const isRootScreensaver = pathname === "/";
 
   useEffect(() => {
     const updateTime = () => {
@@ -40,6 +39,15 @@ export function Waybar() {
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleModeToggle = () => {
+    playSwitchClick("space", soundEnabled);
+    if (isRootScreensaver) {
+      router.push("/sys");
+    } else {
+      router.push("/");
+    }
+  };
 
   return (
     <header
@@ -55,13 +63,10 @@ export function Waybar() {
           {/* Brand Moniker Badge */}
           <button
             onClick={() => {
-              setScreensaverActive(true);
-              if (pathname !== "/") {
-                router.push("/");
-              }
               playSwitchClick("space", soundEnabled);
+              router.push("/");
             }}
-            title="Open Screensaver Hero (Space / Super+Esc)"
+            title="Return to Screensaver Landing (Space / Super+Esc)"
             className="flex items-center gap-1.5 px-2.5 py-1 rounded transition border cursor-pointer group"
             style={{
               backgroundColor: "rgba(0, 0, 0, 0.6)",
@@ -81,15 +86,14 @@ export function Waybar() {
           <nav className="flex items-center gap-0.5 bg-black/60 p-0.5 rounded border border-white/10">
             {WORKSPACES.map((ws) => {
               const isActive =
-                ws.href === "/"
-                  ? pathname === "/"
+                ws.href === "/sys"
+                  ? pathname === "/sys"
                   : pathname?.startsWith(ws.href);
               return (
                 <Link
                   key={ws.href}
                   href={ws.href}
                   onClick={() => {
-                    setScreensaverActive(false);
                     playSwitchClick("down", soundEnabled);
                   }}
                   title={ws.title}
@@ -135,14 +139,14 @@ export function Waybar() {
           <span
             className="font-medium font-mono text-[11px]"
             style={{
-              color: screensaverActive
+              color: isRootScreensaver
                 ? themeConfig.palette.cyan
                 : themeConfig.palette.accent,
             }}
           >
-            {screensaverActive
+            {isRootScreensaver
               ? "screensaver [intro]"
-              : pathname === "/"
+              : pathname === "/sys"
               ? "sys [active]"
               : `${pathname?.replace("/", "")} [active]`}
           </span>
@@ -195,20 +199,14 @@ export function Waybar() {
 
           {/* Mode Toggle Button (Screensaver <-> Desktop) */}
           <button
-            onClick={() => {
-              if (!screensaverActive && pathname !== "/") {
-                router.push("/");
-              }
-              setScreensaverActive(!screensaverActive);
-              playSwitchClick("space", soundEnabled);
-            }}
+            onClick={handleModeToggle}
             className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-white/10 hover:bg-white/15 border border-white/20 text-white transition cursor-pointer font-mono text-[11px]"
             title="Toggle Mode (Space / Super+Esc)"
           >
             <span className="hidden sm:inline text-[10px] bg-white/10 px-1 py-0.2 rounded border border-white/20 text-cyan-300">
               Space
             </span>
-            <span>{screensaverActive ? "Desktop" : "Screensaver"}</span>
+            <span>{isRootScreensaver ? "Desktop" : "Screensaver"}</span>
           </button>
 
           {/* Live System Clock */}

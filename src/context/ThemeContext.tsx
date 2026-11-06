@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, useTransition } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { playSwitchClick } from "@/lib/audio";
 
 export type ThemeId = "tokyonight" | "flexoki" | "oxocarbon" | "catppuccin" | "monochrome";
@@ -134,6 +135,8 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [theme, setThemeState] = useState<ThemeId>("tokyonight");
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [crtEnabled, setCrtEnabled] = useState(true);
@@ -188,7 +191,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const themeConfig = THEMES[theme] || THEMES.tokyonight;
 
-  // Global key listener for Command Palette and Screensaver
+  // Global key listener for Command Palette, Space toggle, and Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // ⌘K or Ctrl+K -> Command Palette
@@ -198,32 +201,52 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         playSwitchClick("down", soundEnabled);
         return;
       }
-      // Escape -> Close Command Palette or Screensaver
+
+      // Escape -> Close Command Palette or wake from root screensaver
       if (e.key === "Escape") {
         if (commandPaletteOpen) {
           setCommandPaletteOpen(false);
           return;
         }
-        if (screensaverActive) {
-          setScreensaverActive(false);
+        if (pathname === "/") {
+          playSwitchClick("space", soundEnabled);
+          router.push("/sys");
           return;
         }
       }
-      // Space or Enter -> Toggle Screensaver when not typing in an input
-      if ((e.code === "Space" || (screensaverActive && e.key === "Enter")) && !commandPaletteOpen) {
+
+      // Space or Enter -> Navigate between / and /sys when not typing
+      if (e.code === "Space" && !commandPaletteOpen) {
         const target = e.target as HTMLElement;
         if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
           return;
         }
         e.preventDefault();
-        setScreensaverActive((prev) => !prev);
         playSwitchClick("space", soundEnabled);
+        if (pathname === "/") {
+          router.push("/sys");
+        } else {
+          router.push("/");
+        }
+        return;
+      }
+
+      // Enter on root screensaver -> Go to desktop /sys
+      if (e.key === "Enter" && pathname === "/" && !commandPaletteOpen) {
+        const target = e.target as HTMLElement;
+        if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
+          return;
+        }
+        e.preventDefault();
+        playSwitchClick("space", soundEnabled);
+        router.push("/sys");
+        return;
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [commandPaletteOpen, screensaverActive, soundEnabled]);
+  }, [commandPaletteOpen, soundEnabled, pathname, router]);
 
   return (
     <ThemeContext.Provider
